@@ -13,14 +13,14 @@ import (
 )
 
 // GenerateKeys() creates public private keys for a $USER
-func GenerateKeys(c config.Config) {
-	keyPath := c.KeyDirectory
-	username := c.Username
-	privPath := fmt.Sprintf("%s/privatekey_%s.pem", keyPath, username)
-	pubPath := fmt.Sprintf("%s/publickey_%s.pem", keyPath, username)
+func GenerateKeys(c config.Config) error {
+	privPath := c.PrivateKeyPath
+	pubPath := c.PublicKeyPath
 	// generate private key
 	privatekey, err := rsa.GenerateKey(rand.Reader, 1024)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 	// Write Private Key
 	privBytes := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PRIVATE KEY",
@@ -31,7 +31,9 @@ func GenerateKeys(c config.Config) {
 	fmt.Println(string(privBytes))
 	// Write Public Key
 	ansipub, err := x509.MarshalPKIXPublicKey(&privatekey.PublicKey)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 	pubBytes := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PUBLIC KEY",
 		Bytes: ansipub,
@@ -39,4 +41,5 @@ func GenerateKeys(c config.Config) {
 	ioutil.WriteFile(pubPath, pubBytes, 0644)
 	log.Info("Public Key: ", pubPath)
 	fmt.Println(string(pubBytes))
+	return nil
 }

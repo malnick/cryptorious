@@ -6,16 +6,17 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
+	"github.com/malnick/cryptorious/action"
 	"github.com/malnick/cryptorious/config"
 )
 
 // Start() is a wrapper for codegansta/CLI implementation
 func Start() error {
 	printBanner()
-	c, err := config.GetConfiguration()
+	config, err := config.GetConfiguration()
 	handleError(err)
 	app := cli.NewApp()
-	app.Version = c.Version
+	app.Version = config.Version
 	app.Name = "cryptorious"
 	app.Usage = "CLI-based encryption for passwords and random data"
 	app.Authors = []cli.Author{
@@ -27,16 +28,10 @@ func Start() error {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:        "config, c",
-			Value:       c.AppYamlPath,
-			Usage:       "Path to YAML configuration file `/PATH/TO/CONFIG`",
-			Destination: &c.AppYamlPath,
-		},
-		cli.StringFlag{
 			Name:        "user, u",
-			Value:       c.UserName,
+			Value:       config.UserName,
 			Usage:       "Username for vault `USERNAME`.",
-			Destination: &c.UserName,
+			Destination: &config.UserName,
 		},
 	}
 
@@ -58,11 +53,13 @@ func Start() error {
 			},
 		},
 		{
-			Name:    "generate-keys",
+			Name:    "generate",
 			Aliases: []string{"gk"},
 			Usage:   "Generate a unique RSA public and private key pair for a user specified by user_name or with -user",
 			Action: func(c *cli.Context) {
 				fmt.Println("Generating new RSA public/private key pair for ", c.Args().First())
+				err := action.GenerateKeys(config)
+				handleError(err)
 			},
 		},
 	}
