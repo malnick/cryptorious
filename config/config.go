@@ -1,8 +1,9 @@
-package main
+package config
 
 import (
 	"io/ioutil"
 
+	log "github.com/Sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -22,9 +23,15 @@ type Config struct {
 	UserName       string `yaml:"user_name"`
 }
 
-func (c *Config) Set() error {
+func (c *Config) set() error {
 	if len(c.AppYamlPath) > 0 {
-
+		fileBytes, err := ioutil.ReadFile(c.AppYamlPath)
+		if err != nil {
+			return err
+		}
+		if err := yaml.Unmarshal(fileBytes, &c); err != nil {
+			return err
+		}
 	} else {
 		c.Version = VERSION
 		c.Revision = REVISION
@@ -33,6 +40,8 @@ func (c *Config) Set() error {
 		c.PublicKeyPath = "./cryptorious_publickey"
 		c.VaultPath = "./cryptorious_vault.yaml"
 		c.AppYamlPath = "./cryptorious.yaml"
+
+		log.Warn("Config file not found, writing one with all defaults ", c.AppYamlPath)
 
 		yamlBytes, err := yaml.Marshal(&c)
 		if err != nil {
@@ -45,14 +54,9 @@ func (c *Config) Set() error {
 	return nil
 }
 
-func (c *Config) Load() error {
-
-	return nil
-}
-
 // Configuration() returns the configuration for application level logic
 func GetConfiguration() (c Config, err error) {
-	if err := c.Set(); err != nil {
+	if err := c.set(); err != nil {
 		return c, err
 	}
 	return c, nil

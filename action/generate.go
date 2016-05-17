@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/grafana/grafana/pkg/log"
+	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/cryptorious/config"
 )
 

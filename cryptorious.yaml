@@ -1,0 +1,5 @@
+appyamlpath: ./cryptorious.yaml
+private_key_path: ./cryptorious_privatekey
+public_key_path: ./cryptorious_publickey
+vault_path: ./cryptorious_vault.yaml
+user_name: ""
