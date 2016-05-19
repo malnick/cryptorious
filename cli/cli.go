@@ -13,8 +13,8 @@ import (
 // Start() is a wrapper for codegansta/CLI implementation
 func Start() error {
 	printBanner()
-	config, err := config.GetConfiguration()
-	handleError(err)
+	config, cErr := config.GetConfiguration()
+	handleError(cErr)
 	app := cli.NewApp()
 	app.Version = config.Version
 	app.Name = "cryptorious"
@@ -28,10 +28,16 @@ func Start() error {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:        "user, u",
-			Value:       config.UserName,
-			Usage:       "Username for vault `USERNAME`.",
-			Destination: &config.UserName,
+			Name:        "vault-path, vp",
+			Value:       config.VaultPath,
+			Usage:       "Path to vault containing cryptorious.yaml.",
+			Destination: &config.VaultPath,
+		},
+		cli.StringFlag{
+			Name:        "private-key, priv",
+			Value:       config.PrivateKeyPath,
+			Usage:       "Path to private key.",
+			Destination: &config.PrivateKeyPath,
 		},
 	}
 
@@ -54,12 +60,11 @@ func Start() error {
 		},
 		{
 			Name:    "generate",
-			Aliases: []string{"gk"},
+			Aliases: []string{"g"},
 			Usage:   "Generate a unique RSA public and private key pair for a user specified by user_name or with -user",
 			Action: func(c *cli.Context) {
 				fmt.Println("Generating new RSA public/private key pair for ", c.Args().First())
-				err := action.GenerateKeys(config)
-				handleError(err)
+				handleError(action.GenerateKeys(config))
 			},
 		},
 	}

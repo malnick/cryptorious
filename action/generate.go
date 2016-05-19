@@ -26,7 +26,11 @@ func GenerateKeys(c config.Config) error {
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(privatekey),
 	})
-	ioutil.WriteFile(privPath, privBytes, 0600)
+
+	if err := ioutil.WriteFile(privPath, privBytes, 0600); err != nil {
+		return err
+	}
+
 	log.Info("Private Key: ", privPath)
 	fmt.Println(string(privBytes))
 	// Write Public Key
@@ -38,7 +42,10 @@ func GenerateKeys(c config.Config) error {
 		Type:  "RSA PUBLIC KEY",
 		Bytes: ansipub,
 	})
-	ioutil.WriteFile(pubPath, pubBytes, 0644)
+
+	if err := ioutil.WriteFile(pubPath, pubBytes, 0644); err != nil {
+		return err
+	}
 	log.Info("Public Key: ", pubPath)
 	fmt.Println(string(pubBytes))
 	return nil

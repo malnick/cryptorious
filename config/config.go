@@ -1,13 +1,10 @@
 package config
 
 import (
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	log "github.com/Sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -17,51 +14,42 @@ var (
 
 // Config{} is the complete application configuration
 type Config struct {
-	Version        string `yaml:",omitempty"`
-	Revision       string `yaml:",omitempty"`
-	AppYamlName    string `yaml:",omitempty"`
-	VaultPath      string `yaml:",omitempty"`
-	PrivateKeyName string `yaml:"private_key_path"`
-	PublicKeyName  string `yaml:"public_key_path"`
-	VaultName      string `yaml:"vault_path"`
-	UserName       string `yaml:"user_name"`
+	Version        string
+	Revision       string
+	AppYamlName    string
+	VaultPath      string
+	MasterPassword string
+	PrivateKeyPath string
+	PublicKeyPath  string
+	VaultName      string
 }
 
-func (c *Config) set() error {
+// set() configurations application level direcotories such as the .cryptorious $HOME dir, and .ssh if it does not exist.
+func (c *Config) setDefaults() error {
 	home := os.Getenv("HOME")
-	if len(os.Getenv("HOME")) > 0 {
-		c.VaultPath = fmt.Sprintf("%s/.cryptorious", home)
-		fileBytes, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", c.VaultPath, c.AppYamlName))
-		if err != nil {
-			if err := yaml.Unmarshal(fileBytes, &c); err != nil {
-				return err
-			}
-		} else {
-			c.Version = VERSION
-			c.Revision = REVISION
-			c.UserName = ""
-			c.PrivateKeyName = "cryptorious_privatekey"
-			c.PublicKeyName = "cryptorious_publickey"
-			c.VaultName = "cryptorious_vault.yaml"
-			c.AppYamlName = "cryptorious.yaml"
+	c.Version = VERSION
+	c.Revision = REVISION
+	c.PrivateKeyPath = fmt.Sprintf("%s/.ssh/cryptorious_privatekey", home)
+	c.PublicKeyPath = fmt.Sprintf("%s/.ssh/cryptorious_publickey", home)
+	c.VaultName = "cryptorious_vault.yaml"
+	c.AppYamlName = "cryptorious.yaml"
+	c.VaultPath = fmt.Sprintf("%s/.cryptorious", home)
+	return nil
+}
 
-			log.Warn("Config file not found, writing one with all defaults ", c.AppYamlName)
-
-			yamlBytes, err := yaml.Marshal(&c)
-			if err != nil {
-				return err
-			}
-			if err := ioutil.WriteFile(c.AppYamlName, yamlBytes, 0644); err != nil {
-				return err
-			}
+func statDirectoryOrCreate(dir string) error {
+	if _, err := os.Stat(dir); err != nil {
+		log.Warnf("%s does not exist, creating...", dir)
+		if err := os.Mkdir(dir, 0755); err != nil {
+			return err
 		}
 	}
-	return errors.New("Could not find $HOME directory, please make sure this environment variable is set before proceeding.")
+	return nil
 }
 
 // Configuration() returns the configuration for application level logic
 func GetConfiguration() (c Config, err error) {
-	if err := c.set(); err != nil {
+	if err := c.setDefaults(); err != nil {
 		return c, err
 	}
 	return c, nil
