@@ -54,7 +54,7 @@ func Start() error {
 			Aliases: []string{"d"},
 			Usage:   "Decrypt a value in the vault `VALUE`",
 			Action: func(c *cli.Context) {
-				fmt.Println("Decrypting ", c.Args().First())
+				handleError(action.Decrypt(c.Args().First(), config))
 			},
 		},
 		{
