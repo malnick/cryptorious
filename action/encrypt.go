@@ -46,11 +46,15 @@ func (vault *Vault) writeValueToVault(key string, encodedValue []byte) error {
 		return err
 	}
 	if _, err := os.Stat(vault.Path); err != nil {
-		log.Warnf("%s does not exist, writing new vault file.")
+		log.Warnf("%s does not exist, writing new vault file.", vault.Path)
 	}
 	if err := ioutil.WriteFile(vault.Path, newYamlData, 0644); err != nil {
 		return err
 	}
+	log.WithFields(log.Fields{
+		"Key":          key,
+		"[]Byte Value": encodedValue,
+	}).Infof("Successfully wrote to %s", vault.Path)
 	return nil
 }
 
@@ -59,8 +63,8 @@ func Encrypt(key string, value string, c config.Config) error {
 	if err != nil {
 		return err
 	}
-	log.Info("Using public key file: ", c.PublicKeyPath)
-	log.Info(string(pubData))
+	log.Debug("Using public key file: ", c.PublicKeyPath)
+	log.Debug(string(pubData))
 
 	pubkey, err := createPublicKeyBlockCipher(pubData)
 	if err != nil {
