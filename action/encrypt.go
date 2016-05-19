@@ -32,7 +32,7 @@ func (vault *Vault) load() error {
 	if err != nil {
 		return err
 	}
-	err = yaml.Unmarshal(yamlBytes, &vault)
+	err = yaml.Unmarshal(yamlBytes, &vault.Data)
 	if err != nil {
 		return err
 	}
@@ -41,8 +41,7 @@ func (vault *Vault) load() error {
 
 func (vault *Vault) writeValueToVault(key string, encodedValue []byte) error {
 	// Assumes .load() was called before executing.
-	vault.Data[key] = string(encodedValue)
-	newYamlData, err := yaml.Marshal(&vault)
+	newYamlData, err := yaml.Marshal(&vault.Data)
 	if err != nil {
 		return err
 	}
@@ -75,9 +74,12 @@ func Encrypt(key string, value string, c config.Config) error {
 	}
 
 	// Amend the Vault with the new data
-	var vault = Vault{}
-	vault.Path = c.VaultPath
+	var vault = Vault{
+		Data: make(map[string]string),
+		Path: c.VaultPath,
+	}
 
+	vault.Data[key] = string(encodedValue)
 	if err := vault.load(); err != nil {
 		return err
 	}
