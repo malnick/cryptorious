@@ -15,7 +15,7 @@ test:
 
 build: 
 	@echo "+$@"
-	go build -v -o cryptorious_$(VERSION) -ldflags '$(LDFLAGS)' main.go
+	go build -v -o cryptorious_$(VERSION) -ldflags '$(LDFLAGS)' cryptorious.go
 
 install:
 	@echo "+$@"
