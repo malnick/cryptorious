@@ -16,12 +16,11 @@ var (
 type Config struct {
 	Version        string
 	Revision       string
-	AppYamlName    string
-	VaultPath      string
 	MasterPassword string
 	PrivateKeyPath string
 	PublicKeyPath  string
-	VaultName      string
+	VaultDir       string
+	VaultPath      string
 }
 
 // set() configurations application level direcotories such as the .cryptorious $HOME dir, and .ssh if it does not exist.
@@ -31,9 +30,11 @@ func (c *Config) setDefaults() error {
 	c.Revision = REVISION
 	c.PrivateKeyPath = fmt.Sprintf("%s/.ssh/cryptorious_privatekey", home)
 	c.PublicKeyPath = fmt.Sprintf("%s/.ssh/cryptorious_publickey", home)
-	c.VaultName = "cryptorious_vault.yaml"
-	c.AppYamlName = "cryptorious.yaml"
-	c.VaultPath = fmt.Sprintf("%s/.cryptorious", home)
+	c.VaultDir = fmt.Sprintf("%s/.cryptorious", home)
+	c.VaultPath = fmt.Sprintf("%s/vault.yaml", c.VaultDir)
+	if err := statDirectoryOrCreate(c.VaultDir); err != nil {
+		return err
+	}
 	return nil
 }
 

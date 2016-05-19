@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -30,7 +31,7 @@ func Start() error {
 		cli.StringFlag{
 			Name:        "vault-path, vp",
 			Value:       config.VaultPath,
-			Usage:       "Path to vault containing cryptorious.yaml.",
+			Usage:       "Path to vault.yaml.",
 			Destination: &config.VaultPath,
 		},
 		cli.StringFlag{
@@ -38,6 +39,12 @@ func Start() error {
 			Value:       config.PrivateKeyPath,
 			Usage:       "Path to private key.",
 			Destination: &config.PrivateKeyPath,
+		},
+		cli.StringFlag{
+			Name:        "public-key, pub",
+			Value:       config.PublicKeyPath,
+			Usage:       "Path to public key.",
+			Destination: &config.PublicKeyPath,
 		},
 	}
 
@@ -55,7 +62,14 @@ func Start() error {
 			Aliases: []string{"e"},
 			Usage:   "Encrypt a vlue for the vault `VALUE`",
 			Action: func(c *cli.Context) {
-				fmt.Println("Encyrpting ", c.Args().First())
+				key := c.Args().First()
+				if len(c.Args()) != 2 {
+					handleError(errors.New("Must pass value for key in arguments to `encrypt`: `cryptorious encrypt $key $value`"))
+				} else {
+					value := c.Args()[1]
+					fmt.Println("Encyrpting ", key, " => ", value)
+					handleError(action.Encrypt(key, value, config))
+				}
 			},
 		},
 		{
