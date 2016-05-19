@@ -63,8 +63,8 @@ func Encrypt(key string, value string, c config.Config) error {
 	if err != nil {
 		return err
 	}
-	log.Debug("Using public key file: ", c.PublicKeyPath)
-	log.Debug(string(pubData))
+	log.Info("Using public key file: ", c.PublicKeyPath)
+	log.Info(string(pubData))
 
 	pubkey, err := createPublicKeyBlockCipher(pubData)
 	if err != nil {

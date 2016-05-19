@@ -67,7 +67,6 @@ func Start() error {
 					handleError(errors.New("Must pass value for key in arguments to `encrypt`: `cryptorious encrypt $key $value`"))
 				} else {
 					value := c.Args()[1]
-					fmt.Println("Encyrpting ", key, " => ", value)
 					handleError(action.Encrypt(key, value, config))
 				}
 			},
