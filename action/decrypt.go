@@ -47,12 +47,14 @@ func Decrypt(key string, c config.Config) error {
 		return err
 	}
 
+	log.Debugf("%s found in %s", key, c.VaultPath)
+
 	decryptedValue, err := rsa.DecryptOAEP(sha1.New(), rand.Reader, priv, []byte(encryptedValue), []byte(">"))
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%s => %s", key, decryptedValue)
+	fmt.Printf("Decrypted value for %s => %s\n", key, decryptedValue)
 
 	return nil
 }
