@@ -10,6 +10,12 @@ _________                            __                   .__
 ```
 Like 1Password but for the CLI. Stores your encrypted data in eyaml using generic SSH keys as the basis for encryption/decryption so you never have to type a password to get your passwords ever again.
 
+## Step 0: Build && Alias
+
+Build it and install: `make install`
+
+Add to your `.[bash | zsh | whatever]rc`: `alias cpt=cryptorious`
+
 ## Step 1: Generate keys
 
 ```
