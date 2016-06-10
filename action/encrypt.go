@@ -76,22 +76,6 @@ func Encrypt(key string, vs *VaultSet, c config.Config) error {
 		return err
 	}
 
-	if len(vs.Password) > 0 {
-		if encoded, err := encryptValue(pubkey, vs.Password); err == nil {
-			vs.Password = string(encoded)
-		} else {
-			return err
-		}
-	}
-
-	if len(vs.SecureNote) > 0 {
-		if encoded, err := encryptValue(pubkey, vs.SecureNote); err == nil {
-			vs.SecureNote = string(encoded)
-		} else {
-			return err
-		}
-	}
-
 	// Amend the Vault with the new data
 	var vault = Vault{
 		Data: make(map[string]*VaultSet),
@@ -102,7 +86,30 @@ func Encrypt(key string, vs *VaultSet, c config.Config) error {
 		return err
 	}
 
-	vault.Data[key] = vs
+	if _, ok := vault.Data[key]; !ok {
+		log.Warnf("Key not found, adding: %s", key)
+		vault.Data[key] = vs
+	}
+
+	if len(vs.Password) > 0 {
+		if encoded, err := encryptValue(pubkey, vs.Password); err == nil {
+			vault.Data[key].Password = string(encoded)
+		} else {
+			return err
+		}
+	}
+
+	if len(vs.SecureNote) > 0 {
+		if encoded, err := encryptValue(pubkey, vs.SecureNote); err == nil {
+			vault.Data[key].SecureNote = string(encoded)
+		} else {
+			return err
+		}
+	}
+
+	if len(vs.Username) > 0 {
+		vault.Data[key].Username = vs.Username
+	}
 
 	if err := vault.writeValueToVault(key); err != nil {
 		return err
