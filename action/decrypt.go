@@ -9,9 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/cryptorious/config"
+	"github.com/olekukonko/tablewriter"
 )
 
 func Decrypt(key string, c config.Config) error {
@@ -42,24 +44,31 @@ func Decrypt(key string, c config.Config) error {
 		return err
 	}
 
-	encryptedPassword, encryptedNote, err := lookUpVault(key, c)
+	username, encryptedPassword, encryptedNote, err := lookUpVault(key, c)
 	if err != nil {
 		return err
 	}
 
-	log.Debugf("%s found in %s", key, c.VaultPath)
-
-	if decryptedPassword, err := decryptValue(priv, encryptedPassword); err != nil {
+	decryptedPassword, err := decryptValue(priv, encryptedPassword)
+	if err != nil {
 		return err
-	} else {
-		fmt.Printf("Decrypted password for %s => %s\n", key, decryptedPassword)
 	}
 
-	if decryptedNote, err := decryptValue(priv, encryptedNote); err != nil {
+	decryptedNote, err := decryptValue(priv, encryptedNote)
+	if err != nil {
 		return err
-	} else {
-		fmt.Printf("Decrypted note for %s => %s\n", key, decryptedNote)
 	}
+
+	prettyPrintMe := [][]string{
+		[]string{key, username, string(decryptedPassword), string(decryptedNote)},
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Key", "Username", "Password", "Secure Note"})
+	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+	table.SetCenterSeparator("|")
+	table.AppendBulk(prettyPrintMe) // Add Bulk Data
+	table.Render()
 
 	return nil
 }
@@ -68,12 +77,12 @@ func decryptValue(privkey *rsa.PrivateKey, encryptedValue string) ([]byte, error
 	return rsa.DecryptOAEP(sha1.New(), rand.Reader, privkey, []byte(encryptedValue), []byte(">"))
 }
 
-func lookUpVault(key string, c config.Config) (string, string, error) {
+func lookUpVault(key string, c config.Config) (string, string, string, error) {
 	var vault = Vault{}
 	vault.Path = c.VaultPath
 	vault.load()
 	if _, ok := vault.Data[key]; !ok {
-		return "", "", errors.New(fmt.Sprintf("%s not found in %s", key, vault.Path))
+		return "", "", "", errors.New(fmt.Sprintf("%s not found in %s", key, vault.Path))
 	}
-	return vault.Data[key].Password, vault.Data[key].SecureNote, nil
+	return vault.Data[key].Username, vault.Data[key].Password, vault.Data[key].SecureNote, nil
 }
