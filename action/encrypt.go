@@ -17,8 +17,14 @@ import (
 	"github.com/malnick/cryptorious/config"
 )
 
+type VaultSet struct {
+	Username   string `yaml:"username"`
+	Password   string `yaml:"password"`
+	SecureNote string `yaml:"secure_note"`
+}
+
 type Vault struct {
-	Data map[string]string
+	Data map[string]*VaultSet `yaml:"data"`
 	Path string
 	Dir  string
 }
@@ -39,7 +45,7 @@ func (vault *Vault) load() error {
 	return nil
 }
 
-func (vault *Vault) writeValueToVault(key string, encodedValue []byte) error {
+func (vault *Vault) writeValueToVault(key string) error {
 	// Assumes .load() was called before executing.
 	newYamlData, err := yaml.Marshal(&vault.Data)
 	if err != nil {
@@ -52,13 +58,14 @@ func (vault *Vault) writeValueToVault(key string, encodedValue []byte) error {
 		return err
 	}
 	log.WithFields(log.Fields{
-		"Key":          key,
-		"[]Byte Value": encodedValue,
+		"Key":             key,
+		"[]Byte Password": vault.Data[key].Password,
+		"[]Byte Note":     vault.Data[key].SecureNote,
 	}).Infof("Successfully wrote to %s", vault.Path)
 	return nil
 }
 
-func Encrypt(key string, value string, c config.Config) error {
+func Encrypt(key string, vs *VaultSet, c config.Config) error {
 	pubData, err := ioutil.ReadFile(c.PublicKeyPath)
 	if err != nil {
 		return err
@@ -71,28 +78,44 @@ func Encrypt(key string, value string, c config.Config) error {
 		return err
 	}
 
-	// Encode the passed in value
-	encodedValue, err := rsa.EncryptOAEP(sha1.New(), rand.Reader, pubkey.(*rsa.PublicKey), []byte(value), []byte(string(">")))
-	if err != nil {
-		return err
+	if len(vs.Password) > 0 {
+		if encoded, err := encryptValue(pubkey, vs.Password); err == nil {
+			vs.Password = string(encoded)
+		} else {
+			return err
+		}
+	}
+
+	if len(vs.SecureNote) > 0 {
+		if encoded, err := encryptValue(pubkey, vs.SecureNote); err == nil {
+			vs.SecureNote = string(encoded)
+		} else {
+			return err
+		}
 	}
 
 	// Amend the Vault with the new data
 	var vault = Vault{
-		Data: make(map[string]string),
+		Data: make(map[string]*VaultSet),
 		Path: c.VaultPath,
 	}
 
-	vault.Data[key] = string(encodedValue)
+	vault.Data[key] = vs
 	if err := vault.load(); err != nil {
 		return err
 	}
 
-	if err := vault.writeValueToVault(key, encodedValue); err != nil {
+	if err := vault.writeValueToVault(key); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func encryptValue(pubkey interface{}, value string) ([]byte, error) {
+	// Encode the passed in value
+	encodedValue, err := rsa.EncryptOAEP(sha1.New(), rand.Reader, pubkey.(*rsa.PublicKey), []byte(value), []byte(string(">")))
+	return encodedValue, err
 }
 
 func createPublicKeyBlockCipher(pubData []byte) (interface{}, error) {

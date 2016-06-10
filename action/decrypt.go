@@ -66,5 +66,5 @@ func lookUpValueFromVault(key string, c config.Config) (string, error) {
 	if _, ok := vault.Data[key]; !ok {
 		return "", errors.New(fmt.Sprintf("%s not found in %s", key, vault.Path))
 	}
-	return vault.Data[key], nil
+	return vault.Data[key].Password, nil
 }

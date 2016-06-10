@@ -58,16 +58,40 @@ func Start() error {
 			},
 		},
 		{
-			Name:    "encrypt",
-			Aliases: []string{"e"},
-			Usage:   "Encrypt a vlue for the vault `VALUE`",
+			Name:            "encrypt",
+			Aliases:         []string{"e"},
+			Usage:           "Encrypt a value for the vault `VALUE`",
+			UsageText:       "Encrypt - encrypt a password and/or note with `KEY` to cryptorious vault.",
+			SkipFlagParsing: false,
+			HideHelp:        false,
+			HelpName:        "encrypt",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "username, u",
+					Usage: "Optional: `USERNAME` for encrypted value.",
+				},
+				cli.StringFlag{
+					Name:  "password, p",
+					Usage: "Optional: `PASSWORD` for encrypted value.",
+				},
+				cli.StringFlag{
+					Name:  "note, n",
+					Usage: "Optional: `NOTE` for encrypted value.",
+				},
+			},
 			Action: func(c *cli.Context) {
 				key := c.Args().First()
-				if len(c.Args()) != 2 {
-					handleError(errors.New("Must pass value for key in arguments to `encrypt`: `cryptorious encrypt $key $value`"))
+				if len(c.Args()) != 1 {
+					handleError(errors.New("Must pass value for key in arguments to `encrypt`: `cryptorious encrypt $KEY`"))
 				} else {
-					value := c.Args()[1]
-					handleError(action.Encrypt(key, value, config))
+					handleError(action.Encrypt(
+						key,
+						&action.VaultSet{
+							Username:   c.String("username"),
+							Password:   c.String("password"),
+							SecureNote: c.String("note"),
+						},
+						config))
 				}
 			},
 		},

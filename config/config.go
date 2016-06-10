@@ -16,7 +16,6 @@ var (
 type Config struct {
 	Version        string
 	Revision       string
-	MasterPassword string
 	PrivateKeyPath string
 	PublicKeyPath  string
 	VaultDir       string
