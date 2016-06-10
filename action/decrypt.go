@@ -42,29 +42,38 @@ func Decrypt(key string, c config.Config) error {
 		return err
 	}
 
-	encryptedValue, err := lookUpValueFromVault(key, c)
+	encryptedPassword, encryptedNote, err := lookUpVault(key, c)
 	if err != nil {
 		return err
 	}
 
 	log.Debugf("%s found in %s", key, c.VaultPath)
 
-	decryptedValue, err := rsa.DecryptOAEP(sha1.New(), rand.Reader, priv, []byte(encryptedValue), []byte(">"))
-	if err != nil {
+	if decryptedPassword, err := decryptValue(priv, encryptedPassword); err != nil {
 		return err
+	} else {
+		fmt.Printf("Decrypted password for %s => %s\n", key, decryptedPassword)
 	}
 
-	fmt.Printf("Decrypted value for %s => %s\n", key, decryptedValue)
+	if decryptedNote, err := decryptValue(priv, encryptedNote); err != nil {
+		return err
+	} else {
+		fmt.Printf("Decrypted note for %s => %s\n", key, decryptedNote)
+	}
 
 	return nil
 }
 
-func lookUpValueFromVault(key string, c config.Config) (string, error) {
+func decryptValue(privkey *rsa.PrivateKey, encryptedValue string) ([]byte, error) {
+	return rsa.DecryptOAEP(sha1.New(), rand.Reader, privkey, []byte(encryptedValue), []byte(">"))
+}
+
+func lookUpVault(key string, c config.Config) (string, string, error) {
 	var vault = Vault{}
 	vault.Path = c.VaultPath
 	vault.load()
 	if _, ok := vault.Data[key]; !ok {
-		return "", errors.New(fmt.Sprintf("%s not found in %s", key, vault.Path))
+		return "", "", errors.New(fmt.Sprintf("%s not found in %s", key, vault.Path))
 	}
-	return vault.Data[key].Password, nil
+	return vault.Data[key].Password, vault.Data[key].SecureNote, nil
 }
