@@ -58,9 +58,7 @@ func (vault *Vault) writeValueToVault(key string) error {
 		return err
 	}
 	log.WithFields(log.Fields{
-		"Key":             key,
-		"[]Byte Password": vault.Data[key].Password,
-		"[]Byte Note":     vault.Data[key].SecureNote,
+		"Key": key,
 	}).Infof("Successfully wrote to %s", vault.Path)
 	return nil
 }
@@ -100,10 +98,11 @@ func Encrypt(key string, vs *VaultSet, c config.Config) error {
 		Path: c.VaultPath,
 	}
 
-	vault.Data[key] = vs
 	if err := vault.load(); err != nil {
 		return err
 	}
+
+	vault.Data[key] = vs
 
 	if err := vault.writeValueToVault(key); err != nil {
 		return err
@@ -114,6 +113,7 @@ func Encrypt(key string, vs *VaultSet, c config.Config) error {
 
 func encryptValue(pubkey interface{}, value string) ([]byte, error) {
 	// Encode the passed in value
+	log.Infof("Encoding value: %s", value)
 	encodedValue, err := rsa.EncryptOAEP(sha1.New(), rand.Reader, pubkey.(*rsa.PublicKey), []byte(value), []byte(string(">")))
 	return encodedValue, err
 }
