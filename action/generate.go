@@ -5,18 +5,20 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/cryptorious/config"
 )
 
 func checkFileExists(path string) bool {
-	if _, err := os.stat(path); err == nil {
-		return True
+	if _, err := os.Stat(path); err == nil {
+		return true
 	}
-	return False
+	return false
 }
 
 // GenerateKeys() creates public private keys for a $USER
@@ -34,7 +36,10 @@ func GenerateKeys(c config.Config) error {
 		Bytes: x509.MarshalPKCS1PrivateKey(privatekey),
 	})
 
-	
+	if checkFileExists(privPath) {
+		log.Warnf("%s exists, please manually remove to proceed.", privPath)
+		return errors.New("Will not overwrite existing private key path.")
+	}
 	if err := ioutil.WriteFile(privPath, privBytes, 0600); err != nil {
 		return err
 	}
@@ -51,6 +56,10 @@ func GenerateKeys(c config.Config) error {
 		Bytes: ansipub,
 	})
 
+	if checkFileExists(pubPath) {
+		log.Warnf("%s exists, please manually remove to proceed.", pubPath)
+		return errors.New("Will not overwrite existing public key path.")
+	}
 	if err := ioutil.WriteFile(pubPath, pubBytes, 0644); err != nil {
 		return err
 	}
