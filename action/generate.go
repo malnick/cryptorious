@@ -21,7 +21,7 @@ func checkFileExists(path string) bool {
 	return false
 }
 
-// GenerateKeys() creates public private keys for a $USER
+// GenerateKeys creates public private keys for a $USER
 func GenerateKeys(c config.Config) error {
 	privPath := c.PrivateKeyPath
 	pubPath := c.PublicKeyPath
