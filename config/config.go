@@ -14,6 +14,7 @@ var (
 
 // Config{} is the complete application configuration
 type Config struct {
+	DebugMode      bool
 	Version        string
 	Revision       string
 	PrivateKeyPath string
@@ -25,6 +26,7 @@ type Config struct {
 // set() configurations application level direcotories such as the .cryptorious $HOME dir, and .ssh if it does not exist.
 func (c *Config) setDefaults() error {
 	home := os.Getenv("HOME")
+	c.DebugMode = false
 	c.Version = VERSION
 	c.Revision = REVISION
 	c.PrivateKeyPath = fmt.Sprintf("%s/.ssh/cryptorious_privatekey", home)
