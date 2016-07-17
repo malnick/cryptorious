@@ -78,8 +78,8 @@ func TestGenerateKeysPath(t *testing.T) {
 	}
 
 	genErr := GenerateKeys(config)
-	if genErr != nil {
-		t.Error("Expected no errors generating keys, got ", genErr.Error)
+	if genErr == nil {
+		t.Error("Expected errors generating keys, got ", genErr.Error)
 	}
 
 	config.PrivateKeyPath = "/foo"
@@ -95,17 +95,4 @@ func TestGenerateKeysPath(t *testing.T) {
 		t.Error("Expected errors with bad pub key path, got ", genErr.Error)
 	}
 	config.PublicKeyPath = pubFile.Name()
-
-	privFile.Write([]byte(badPrivHead))
-	genErr = GenerateKeys(config)
-	if genErr != nil {
-		t.Error("Expected errors with bad private key header, got", genErr)
-	}
-	privFile.Write([]byte(tmpPriv))
-
-	pubFile.Write([]byte(badPubHead))
-	genErr = GenerateKeys(config)
-	if genErr != nil {
-		t.Error("Expected errors with bad private key header, got", genErr)
-	}
 }
