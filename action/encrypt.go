@@ -68,8 +68,8 @@ func Encrypt(key string, vs *VaultSet, c config.Config) error {
 	if err != nil {
 		return err
 	}
-	log.Info("Using public key file: ", c.PublicKeyPath)
-	log.Info(string(pubData))
+	log.Debug("Using public key file: ", c.PublicKeyPath)
+	log.Debug(string(pubData))
 
 	pubkey, err := createPublicKeyBlockCipher(pubData)
 	if err != nil {
@@ -120,7 +120,7 @@ func Encrypt(key string, vs *VaultSet, c config.Config) error {
 
 func encryptValue(pubkey interface{}, value string) ([]byte, error) {
 	// Encode the passed in value
-	log.Infof("Encoding value: %s", value)
+	log.Debugf("Encoding value: %s", value)
 	encodedValue, err := rsa.EncryptOAEP(sha1.New(), rand.Reader, pubkey.(*rsa.PublicKey), []byte(value), []byte(string(">")))
 	return encodedValue, err
 }

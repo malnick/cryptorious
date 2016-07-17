@@ -46,6 +46,11 @@ func Start() error {
 			Usage:       "Path to public key.",
 			Destination: &config.PublicKeyPath,
 		},
+		cli.BoolFlag{
+			Name:        "debug",
+			Usage:       "Debug/Verbose log output.",
+			Destination: &config.DebugMode,
+		},
 	}
 
 	app.Commands = []cli.Command{
@@ -54,6 +59,7 @@ func Start() error {
 			Aliases: []string{"d"},
 			Usage:   "Decrypt a value in the vault `VALUE`",
 			Action: func(c *cli.Context) {
+				setLogger(config.DebugMode)
 				handleError(action.Decrypt(c.Args().First(), config))
 			},
 		},
@@ -80,6 +86,7 @@ func Start() error {
 				},
 			},
 			Action: func(c *cli.Context) {
+				setLogger(config.DebugMode)
 				key := c.Args().First()
 				if len(c.Args()) != 1 {
 					handleError(errors.New("Must pass value for key in arguments to `encrypt`: `cryptorious encrypt $KEY`"))
@@ -100,6 +107,7 @@ func Start() error {
 			Aliases: []string{"g"},
 			Usage:   "Generate a unique RSA public and private key pair for a user specified by user_name or with -user",
 			Action: func(c *cli.Context) {
+				setLogger(config.DebugMode)
 				fmt.Println("Generating new RSA public/private key pair for ", c.Args().First())
 				handleError(action.GenerateKeys(config))
 			},
@@ -123,5 +131,11 @@ func handleError(err error) {
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
+	}
+}
+
+func setLogger(debug bool) {
+	if debug {
+		log.SetLevel(log.DebugLevel)
 	}
 }
