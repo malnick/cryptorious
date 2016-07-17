@@ -12,6 +12,13 @@ import (
 	"github.com/malnick/cryptorious/config"
 )
 
+func checkFileExists(path string) bool {
+	if _, err := os.stat(path); err == nil {
+		return True
+	}
+	return False
+}
+
 // GenerateKeys() creates public private keys for a $USER
 func GenerateKeys(c config.Config) error {
 	privPath := c.PrivateKeyPath
@@ -27,6 +34,7 @@ func GenerateKeys(c config.Config) error {
 		Bytes: x509.MarshalPKCS1PrivateKey(privatekey),
 	})
 
+	
 	if err := ioutil.WriteFile(privPath, privBytes, 0600); err != nil {
 		return err
 	}
