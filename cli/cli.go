@@ -81,12 +81,12 @@ func Start() error {
 			},
 			Action: func(c *cli.Context) {
 				setLogger(config.DebugMode)
-				key := c.Args().First()
+				vaultkey := c.Args().First()
 				if len(c.Args()) != 1 {
 					handleError(errors.New("Must pass value for key in arguments to `encrypt`: `cryptorious encrypt $KEY`"))
 				} else {
 					handleError(action.Encrypt(
-						key,
+						vaultkey,
 						&action.VaultSet{
 							Username:   c.String("username"),
 							Password:   c.String("password"),

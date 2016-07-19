@@ -1,13 +1,14 @@
 package action
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 
@@ -45,7 +46,7 @@ func (vault *Vault) load() error {
 	return nil
 }
 
-func (vault *Vault) writeValueToVault(key string) error {
+func (vault *Vault) writeToVault(vaultkey string) error {
 	// Assumes .load() was called before executing.
 	newYamlData, err := yaml.Marshal(&vault.Data)
 	if err != nil {
@@ -58,73 +59,83 @@ func (vault *Vault) writeValueToVault(key string) error {
 		return err
 	}
 	log.WithFields(log.Fields{
-		"Key": key,
+		"vaultkey": vaultkey,
 	}).Infof("Successfully wrote to %s", vault.Path)
 	return nil
 }
 
-func Encrypt(key string, vs *VaultSet, c config.Config) error {
-	pubData, err := ioutil.ReadFile(c.PublicKeyPath)
+func Encrypt(vaultkey string, vs *VaultSet, c config.Config) error {
+	keydata, err := ioutil.ReadFile(c.KeyPath)
 	if err != nil {
 		return err
 	}
-	log.Debug("Using public key file: ", c.PublicKeyPath)
-	log.Debug(string(pubData))
-
-	pubkey, err := createPublicKeyBlockCipher(pubData)
-	if err != nil {
-		return err
-	}
+	log.Debug("Using key ", c.KeyPath)
 
 	// Amend the Vault with the new data
 	var vault = Vault{
 		Data: make(map[string]*VaultSet),
 		Path: c.VaultPath,
 	}
-
 	if err := vault.load(); err != nil {
 		return err
 	}
 
-	if _, ok := vault.Data[key]; !ok {
-		log.Warnf("Key not found, adding: %s", key)
-		vault.Data[key] = vs
+	if _, ok := vault.Data[vaultkey]; !ok {
+		log.Warnf("Key not found, adding: %s", vaultkey)
+		vault.Data[vaultkey] = vs
+	} else {
+		return errors.New("Key already found in vault, will not overwrite.")
 	}
 
 	if len(vs.Password) > 0 {
-		if encoded, err := encryptValue(pubkey, vs.Password); err == nil {
-			vault.Data[key].Password = string(encoded)
+		if encoded, err := encryptValue(keydata, vs.Password); err == nil {
+			vault.Data[vaultkey].Password = string(encoded)
 		} else {
 			return err
 		}
 	}
 
 	if len(vs.SecureNote) > 0 {
-		if encoded, err := encryptValue(pubkey, vs.SecureNote); err == nil {
-			vault.Data[key].SecureNote = string(encoded)
+		if encoded, err := encryptValue(keydata, vs.SecureNote); err == nil {
+			vault.Data[vaultkey].SecureNote = string(encoded)
 		} else {
 			return err
 		}
 	}
 
 	if len(vs.Username) > 0 {
-		vault.Data[key].Username = vs.Username
+		vault.Data[vaultkey].Username = vs.Username
 	}
 
-	if err := vault.writeValueToVault(key); err != nil {
+	if err := vault.writeToVault(vaultkey); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func encryptValue(pubkey interface{}, value string) ([]byte, error) {
-	// Encode the passed in value
-	log.Debugf("Encoding value: %s", value)
-	encodedValue, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, pubkey.(*rsa.PublicKey), []byte(value), []byte(string(">")))
-	//	encodedValue, err := rsa.EncryptOAEP(sha1.New(), rand.Reader, pubkey.(*rsa.PublicKey), []byte(value), nil)
+func encryptValue(key []byte, plaintext string) ([]byte, error) {
+	log.Debugf("Encrypting plaintext: %s", plaintext)
+	var block cipher.Block
 
-	return encodedValue, err
+	if _, err := aes.NewCipher(key); err != nil {
+		return nil, err
+	}
+
+	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+
+	// iv =  initialization vector
+	iv := ciphertext[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return []byte{}, errors.New("Errors encountered making initilization vector while encrypting plaintext.")
+	}
+
+	cfb := cipher.NewCFBEncrypter(block, iv)
+	cfb.XORKeyStream(ciphertext[aes.BlockSize:], []byte(plaintext))
+
+	log.Debugf("Ciphertext %x", ciphertext)
+
+	return ciphertext, nil
 }
 
 func createPublicKeyBlockCipher(pubData []byte) (interface{}, error) {
