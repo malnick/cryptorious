@@ -1,11 +1,8 @@
 package action
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
-	"encoding/pem"
+	"crypto/aes"
+	"crypto/cipher"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -17,29 +14,10 @@ import (
 )
 
 func Decrypt(key string, c config.Config) error {
-	privData, err := ioutil.ReadFile(c.PrivateKeyPath)
+	log.Debug("Reading key file ", c.KeyPath)
+	keydata, err := ioutil.ReadFile(c.KeyPath)
 	if err != nil {
-		log.Errorf("%s was not found. Try `generate` first.", c.PrivateKeyPath)
-		return err
-	}
-	log.Debug("Private key file: ", c.PrivateKeyPath)
-	if err != nil {
-		return err
-	}
-	// Extract the PEM-encoded data block
-	block, _ := pem.Decode(privData)
-	if block == nil {
-		log.Error("bad key data: %s", "not PEM-encoded")
-		return err
-	}
-	if got, want := block.Type, "RSA PRIVATE KEY"; got != want {
-		log.Error("unknown key type %q, want %q", got, want)
-		return err
-	}
-	// Decode the RSA private key
-	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		log.Error("bad private key: %s", err)
+		log.Errorf("%s was not found. Try `generate` first.", c.KeyPath)
 		return err
 	}
 
@@ -48,12 +26,12 @@ func Decrypt(key string, c config.Config) error {
 		return err
 	}
 
-	decryptedPassword, err := decryptValue(priv, encryptedPassword)
+	decryptedPassword, err := decryptValue(keydata, []byte(encryptedPassword))
 	if err != nil {
 		return err
 	}
 
-	decryptedNote, err := decryptValue(priv, encryptedNote)
+	decryptedNote, err := decryptValue(keydata, []byte(encryptedNote))
 	if err != nil {
 		return err
 	}
@@ -72,11 +50,26 @@ func Decrypt(key string, c config.Config) error {
 	return nil
 }
 
-func decryptValue(privkey *rsa.PrivateKey, encryptedValue string) ([]byte, error) {
-	log.Warn("decrypting...")
-	log.Warn([]byte(encryptedValue))
-	return rsa.DecryptOAEP(sha256.New(), rand.Reader, privkey, []byte(encryptedValue), []byte(">"))
+func decryptValue(key, ciphertext []byte) ([]byte, error) {
+	var block cipher.Block
 
+	if block, err := aes.NewCipher(key); err != nil {
+		return []byte{}, err
+	}
+
+	if len(ciphertext) < aes.BlockSize {
+		err := errors.New("ciphertext too short")
+		return []byte{}, err
+	}
+
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
+
+	cfb := cipher.NewCFBDecrypter(block, iv)
+	cfb.XORKeyStream(ciphertext, ciphertext)
+
+	plaintext := ciphertext
+	return plaintext, nil
 }
 
 func lookUpVault(key string, c config.Config) (string, string, string, error) {
