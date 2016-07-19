@@ -35,16 +35,10 @@ func Start() error {
 			Destination: &config.VaultPath,
 		},
 		cli.StringFlag{
-			Name:        "private-key, priv",
-			Value:       config.PrivateKeyPath,
-			Usage:       "Path to private key.",
-			Destination: &config.PrivateKeyPath,
-		},
-		cli.StringFlag{
-			Name:        "public-key, pub",
-			Value:       config.PublicKeyPath,
-			Usage:       "Path to public key.",
-			Destination: &config.PublicKeyPath,
+			Name:        "key-path, k",
+			Value:       config.KeyPath,
+			Usage:       "Path to cryptorious AES key.",
+			Destination: &config.KeyPath,
 		},
 		cli.BoolFlag{
 			Name:        "debug",

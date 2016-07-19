@@ -14,13 +14,12 @@ var (
 
 // Config{} is the complete application configuration
 type Config struct {
-	DebugMode      bool
-	Version        string
-	Revision       string
-	PrivateKeyPath string
-	PublicKeyPath  string
-	VaultDir       string
-	VaultPath      string
+	DebugMode bool
+	Version   string
+	Revision  string
+	KeyPath   string
+	VaultDir  string
+	VaultPath string
 }
 
 // set() configurations application level direcotories such as the .cryptorious $HOME dir, and .ssh if it does not exist.
@@ -29,8 +28,7 @@ func (c *Config) setDefaults() error {
 	c.DebugMode = false
 	c.Version = VERSION
 	c.Revision = REVISION
-	c.PrivateKeyPath = fmt.Sprintf("%s/.ssh/cryptorious_privatekey", home)
-	c.PublicKeyPath = fmt.Sprintf("%s/.ssh/cryptorious_publickey", home)
+	c.KeyPath = fmt.Sprintf("%s/.ssh/cryptorious_key", home)
 	c.VaultDir = fmt.Sprintf("%s/.cryptorious", home)
 	c.VaultPath = fmt.Sprintf("%s/vault.yaml", c.VaultDir)
 	if err := statDirectoryOrCreate(c.VaultDir); err != nil {
