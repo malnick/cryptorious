@@ -3,7 +3,7 @@ package action
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha1"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -23,7 +23,6 @@ func Decrypt(key string, c config.Config) error {
 		return err
 	}
 	log.Debug("Private key file: ", c.PrivateKeyPath)
-	log.Debug(string(privData))
 	if err != nil {
 		return err
 	}
@@ -74,7 +73,10 @@ func Decrypt(key string, c config.Config) error {
 }
 
 func decryptValue(privkey *rsa.PrivateKey, encryptedValue string) ([]byte, error) {
-	return rsa.DecryptOAEP(sha1.New(), rand.Reader, privkey, []byte(encryptedValue), []byte(">"))
+	log.Warn("decrypting...")
+	log.Warn([]byte(encryptedValue))
+	return rsa.DecryptOAEP(sha256.New(), rand.Reader, privkey, []byte(encryptedValue), []byte(">"))
+
 }
 
 func lookUpVault(key string, c config.Config) (string, string, string, error) {

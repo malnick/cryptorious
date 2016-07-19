@@ -3,7 +3,7 @@ package action
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha1"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -121,7 +121,9 @@ func Encrypt(key string, vs *VaultSet, c config.Config) error {
 func encryptValue(pubkey interface{}, value string) ([]byte, error) {
 	// Encode the passed in value
 	log.Debugf("Encoding value: %s", value)
-	encodedValue, err := rsa.EncryptOAEP(sha1.New(), rand.Reader, pubkey.(*rsa.PublicKey), []byte(value), []byte(string(">")))
+	encodedValue, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, pubkey.(*rsa.PublicKey), []byte(value), []byte(string(">")))
+	//	encodedValue, err := rsa.EncryptOAEP(sha1.New(), rand.Reader, pubkey.(*rsa.PublicKey), []byte(value), nil)
+
 	return encodedValue, err
 }
 
