@@ -53,7 +53,8 @@ func Decrypt(key string, c config.Config) error {
 func decryptValue(key, ciphertext []byte) ([]byte, error) {
 	var block cipher.Block
 
-	if _, err := aes.NewCipher(key); err != nil {
+	block, err := aes.NewCipher(key)
+	if err != nil {
 		return []byte{}, err
 	}
 

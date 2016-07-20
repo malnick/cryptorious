@@ -118,7 +118,8 @@ func encryptValue(key []byte, plaintext string) ([]byte, error) {
 	log.Debugf("Encrypting plaintext: %s", plaintext)
 	var block cipher.Block
 
-	if _, err := aes.NewCipher(key); err != nil {
+	block, err := aes.NewCipher(key)
+	if err != nil {
 		return nil, err
 	}
 

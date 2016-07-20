@@ -20,7 +20,7 @@ func checkFileExists(path string) bool {
 
 // GenerateKeys creates public private keys for a $USER
 func GenerateKeys(c config.Config) error {
-	key := make([]byte, 64)
+	key := make([]byte, 8)
 	keypath := c.KeyPath
 	if _, err := rand.Read(key); err != nil {
 		return err
