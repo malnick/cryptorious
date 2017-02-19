@@ -37,7 +37,7 @@ func New(path string) (Vault, error) {
 // Load() unmarshals the YAML from disk to a serialized object for CRUD operations.
 func (v *Vault) Load() error {
 	if _, err := os.Stat(v.Path); err != nil {
-		log.Warnf("%s not found, will create new v file.", v.Path)
+		log.Warnf("%s not found, can not load vault", v.Path)
 		return nil
 	}
 	yamlBytes, err := ioutil.ReadFile(v.Path)
@@ -65,6 +65,10 @@ func (v *Vault) Write() error {
 }
 
 func (v *Vault) Update(key string, vs *VaultSet) error {
+	if v.Data == nil {
+		v.Data = make(map[string]*VaultSet)
+	}
+
 	if _, ok := v.Data[key]; ok {
 		return errors.New(fmt.Sprintf("vault entry for %s found, try `cryptorious delete %s` first?", key, key))
 	}
