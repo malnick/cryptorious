@@ -91,14 +91,12 @@ func Start() error {
 				if len(c.Args()) != 1 {
 					handleError(errors.New("Must pass value for key in arguments to `encrypt`: `cryptorious encrypt $KEY`"))
 				} else {
-					handleError(action.Encrypt(
-						key,
-						&action.VaultSet{
-							Username:   c.String("username"),
-							Password:   c.String("password"),
-							SecureNote: c.String("note"),
-						},
-						config))
+					vaultSet, err := vaultSetFromCurses()
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					handleError(action.Encrypt(key, vaultSet, config))
 				}
 			},
 		},
