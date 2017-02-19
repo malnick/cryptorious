@@ -13,9 +13,22 @@
 			"revisionTime": "2016-04-03T18:54:34-07:00"
 		},
 		{
+			"checksumSHA1": "yf185lmVPcvXjLZuPT1s4JzxI18=",
+			"path": "github.com/mattn/go-runewidth",
+			"revision": "737072b4e32b7a5018b4a7125da8d12de90e8045",
+			"revisionTime": "2016-10-12T01:35:12Z"
+		},
+		{
+			"checksumSHA1": "0KQQY1f4p/HmCQE7HjdgesEoe3Y=",
+			"path": "github.com/olekukonko/tablewriter",
+			"revision": "bdcc175572fd7abece6c831e643891b9331bc9e7",
+			"revisionTime": "2016-09-23T12:54:01Z"
+		},
+		{
 			"path": "gopkg.in/yaml.v2",
 			"revision": "7ad95dd0798a40da1ccdff6dff35fd177b5edf40",
 			"revisionTime": "2015-06-24T11:29:02+01:00"
 		}
-	]
+	],
+	"rootPath": "github.com/malnick/cryptorious"
 }
