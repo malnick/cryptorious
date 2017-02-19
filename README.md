@@ -58,10 +58,10 @@ cryptorious generate --private-key foo_priv --public-key foo_pub
 ## Step 2: Encrypt
 
 ```
-cryptorious encrypt github --password 'p@$$' --username myuser --note 'my$ecure note'
+cryptorious encrypt github  
 ```
 
-Will encrypt password and note using your private key and dump out a PKCS1 hash, writing it to ```$HOME/.cryptorious/vault.yaml``` with the key `github`.
+Will open a ncurses window and prompt you for username, password and a secure note. All input is optional. 
 
 
 ## Step 3: Decrypt 
@@ -74,8 +74,7 @@ _________                            __                   .__
 \     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \
  \______  / |__|    / ____||   __/  |__|   \____/  |__|   |__| \____/ |____/ /____  >
         \/          \/     |__|                                                   \/
-|  KEY  | USERNAME |  PASSWORD   | SECURE NOTE |
-|-------|----------|-------------|-------------|
-| thing | foouser  | foopassword | foonote     |
-
+# ncurses for the win.
 ```
+
+Will open a ncurses window with the decrypted vault entry. 

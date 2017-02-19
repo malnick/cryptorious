@@ -71,34 +71,18 @@ func Start() error {
 			SkipFlagParsing: false,
 			HideHelp:        false,
 			HelpName:        "encrypt",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "username, u",
-					Usage: "Optional: `USERNAME` for encrypted value.",
-				},
-				cli.StringFlag{
-					Name:  "password, p",
-					Usage: "Optional: `PASSWORD` for encrypted value.",
-				},
-				cli.StringFlag{
-					Name:  "note, n",
-					Usage: "Optional: `NOTE` for encrypted value.",
-				},
-			},
 			Action: func(c *cli.Context) {
 				setLogger(config.DebugMode)
 				key := c.Args().First()
 				if len(c.Args()) != 1 {
 					handleError(errors.New("Must pass value for key in arguments to `encrypt`: `cryptorious encrypt $KEY`"))
 				} else {
-					handleError(action.Encrypt(
-						key,
-						&action.VaultSet{
-							Username:   c.String("username"),
-							Password:   c.String("password"),
-							SecureNote: c.String("note"),
-						},
-						config))
+					vaultSet, err := vaultSetFromCurses()
+					if err != nil {
+						log.Fatal(err)
+					}
+
+					handleError(action.Encrypt(key, vaultSet, config))
 				}
 			},
 		},
