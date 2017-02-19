@@ -3,12 +3,12 @@ package cli
 import (
 	"fmt"
 
-	"github.com/malnick/cryptorious/action"
+	"github.com/malnick/cryptorious/vault"
 	gc "github.com/rthornton128/goncurses"
 )
 
-func vaultSetFromCurses() (*action.VaultSet, error) {
-	vaultSet := &action.VaultSet{}
+func vaultSetFromCurses() (*vault.VaultSet, error) {
+	vaultSet := &vault.VaultSet{}
 
 	username, err := getValuesFor("Username")
 	if err != nil {

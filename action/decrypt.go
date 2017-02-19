@@ -11,6 +11,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/cryptorious/config"
+	"github.com/malnick/cryptorious/vault"
 )
 
 func Decrypt(key string, c config.Config) error {
@@ -71,9 +72,9 @@ func decryptValue(privkey *rsa.PrivateKey, encryptedValue string) ([]byte, error
 }
 
 func lookUpVault(key string, c config.Config) (string, string, string, error) {
-	var vault = Vault{}
+	var vault = vault.Vault{}
 	vault.Path = c.VaultPath
-	vault.load()
+	vault.Load()
 	if _, ok := vault.Data[key]; !ok {
 		return "", "", "", errors.New(fmt.Sprintf("%s not found in %s", key, vault.Path))
 	}
