@@ -15,14 +15,7 @@ import (
 )
 
 func Encrypt(key string, vs *vault.VaultSet, c config.Config) error {
-	pubData, err := ioutil.ReadFile(c.PublicKeyPath)
-	if err != nil {
-		return err
-	}
-	log.Debug("using public key file: ", c.PublicKeyPath)
-	log.Debug(string(pubData))
-
-	pubkey, err := createPublicKeyBlockCipher(pubData)
+	pubkey, err := createPublicKey(c.PublicKeyPath)
 	if err != nil {
 		return err
 	}
@@ -64,6 +57,22 @@ func encryptValue(pubkey interface{}, value string) ([]byte, error) {
 	log.Debugf("Encoding value: %s", value)
 	encodedValue, err := rsa.EncryptPKCS1v15(rand.Reader, pubkey.(*rsa.PublicKey), []byte(value))
 	return encodedValue, err
+}
+
+func createPublicKey(path string) (*rsa.PublicKey, error) {
+	pubData, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	log.Debug("using public key file: ", path)
+	log.Debug(string(pubData))
+
+	pubkey, err := createPublicKeyBlockCipher(pubData)
+	if err != nil {
+		return nil, err
+	}
+
+	return pubkey.(*rsa.PublicKey), nil
 }
 
 func createPublicKeyBlockCipher(pubData []byte) (interface{}, error) {

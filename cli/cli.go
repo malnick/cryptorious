@@ -8,13 +8,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	"github.com/malnick/cryptorious/action"
-	"github.com/malnick/cryptorious/config"
+	vaultConfig "github.com/malnick/cryptorious/config"
 )
 
 // Start() is a wrapper for codegansta/CLI implementation
 func Start() error {
 	printBanner()
-	config, cErr := config.GetConfiguration()
+	config, cErr := vaultConfig.GetConfiguration()
 	handleError(cErr)
 	app := cli.NewApp()
 	app.Version = config.Version
@@ -54,6 +54,14 @@ func Start() error {
 	}
 
 	app.Commands = []cli.Command{
+		{
+			Name:  "rotate",
+			Usage: "Rotate your cryptorious SSH keys automatically",
+			Action: func(c *cli.Context) {
+				setLogger(config.DebugMode)
+				handleError(action.RotateVault(config))
+			},
+		},
 		{
 			Name:  "delete",
 			Usage: "Remove an entry from the cryptorious vault",
