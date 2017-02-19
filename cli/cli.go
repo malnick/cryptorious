@@ -55,6 +55,14 @@ func Start() error {
 
 	app.Commands = []cli.Command{
 		{
+			Name:  "delete",
+			Usage: "Remove an entry from the cryptorious vault",
+			Action: func(c *cli.Context) {
+				setLogger(config.DebugMode)
+				handleError(action.DeleteVaultEntry(c.Args().First(), config.VaultPath))
+			},
+		},
+		{
 			Name:    "decrypt",
 			Aliases: []string{"d"},
 			Usage:   "Decrypt a value in the vault `VALUE`",
