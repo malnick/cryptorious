@@ -11,6 +11,6 @@ func DeleteVaultEntry(key string, vaultPath string) error {
 		return err
 	}
 
-	log.Debugf("Removing entry from vault: %s", key)
+	log.Warnf("Removing '%s' entry from vault", key)
 	return vault.Delete(key)
 }

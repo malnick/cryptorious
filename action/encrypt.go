@@ -8,66 +8,18 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
-
-	"gopkg.in/yaml.v2"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/cryptorious/config"
+	"github.com/malnick/cryptorious/vault"
 )
 
-type VaultSet struct {
-	Username   string `yaml:"username"`
-	Password   string `yaml:"password"`
-	SecureNote string `yaml:"secure_note"`
-}
-
-type Vault struct {
-	Data map[string]*VaultSet `yaml:"data"`
-	Path string
-	Dir  string
-}
-
-func (vault *Vault) load() error {
-	if _, err := os.Stat(vault.Path); err != nil {
-		log.Warnf("%s not found, will create new Vault file.", vault.Path)
-		return nil
-	}
-	yamlBytes, err := ioutil.ReadFile(vault.Path)
-	if err != nil {
-		return err
-	}
-	err = yaml.Unmarshal(yamlBytes, &vault.Data)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (vault *Vault) writeValueToVault(key string) error {
-	// Assumes .load() was called before executing.
-	newYamlData, err := yaml.Marshal(&vault.Data)
-	if err != nil {
-		return err
-	}
-	if _, err := os.Stat(vault.Path); err != nil {
-		log.Warnf("%s does not exist, writing new vault file.", vault.Path)
-	}
-	if err := ioutil.WriteFile(vault.Path, newYamlData, 0644); err != nil {
-		return err
-	}
-	log.WithFields(log.Fields{
-		"Key": key,
-	}).Infof("Successfully wrote to %s", vault.Path)
-	return nil
-}
-
-func Encrypt(key string, vs *VaultSet, c config.Config) error {
+func Encrypt(key string, vs *vault.VaultSet, c config.Config) error {
 	pubData, err := ioutil.ReadFile(c.PublicKeyPath)
 	if err != nil {
 		return err
 	}
-	log.Debug("Using public key file: ", c.PublicKeyPath)
+	log.Debug("using public key file: ", c.PublicKeyPath)
 	log.Debug(string(pubData))
 
 	pubkey, err := createPublicKeyBlockCipher(pubData)
@@ -75,24 +27,14 @@ func Encrypt(key string, vs *VaultSet, c config.Config) error {
 		return err
 	}
 
-	// Amend the Vault with the new data
-	var vault = Vault{
-		Data: make(map[string]*VaultSet),
-		Path: c.VaultPath,
-	}
-
-	if err := vault.load(); err != nil {
+	thisVault, err := vault.New(c.VaultPath)
+	if err != nil {
 		return err
-	}
-
-	if _, ok := vault.Data[key]; !ok {
-		log.Warnf("Key not found, adding: %s", key)
-		vault.Data[key] = vs
 	}
 
 	if len(vs.Password) > 0 {
 		if encoded, err := encryptValue(pubkey, vs.Password); err == nil {
-			vault.Data[key].Password = string(encoded)
+			vs.Password = string(encoded)
 		} else {
 			return err
 		}
@@ -100,17 +42,17 @@ func Encrypt(key string, vs *VaultSet, c config.Config) error {
 
 	if len(vs.SecureNote) > 0 {
 		if encoded, err := encryptValue(pubkey, vs.SecureNote); err == nil {
-			vault.Data[key].SecureNote = string(encoded)
+			vs.SecureNote = string(encoded)
 		} else {
 			return err
 		}
 	}
 
 	if len(vs.Username) > 0 {
-		vault.Data[key].Username = vs.Username
+		vs.Username = vs.Username
 	}
 
-	if err := vault.writeValueToVault(key); err != nil {
+	if err := thisVault.Update(key, vs); err != nil {
 		return err
 	}
 
