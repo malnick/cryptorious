@@ -8,11 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/cryptorious/config"
-	"github.com/olekukonko/tablewriter"
 )
 
 func Decrypt(key string, c config.Config) error {
@@ -59,16 +57,7 @@ func Decrypt(key string, c config.Config) error {
 		return err
 	}
 
-	prettyPrintMe := [][]string{
-		[]string{key, username, string(decryptedPassword), string(decryptedNote)},
-	}
-
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Key", "Username", "Password", "Secure Note"})
-	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-	table.SetCenterSeparator("|")
-	table.AppendBulk(prettyPrintMe) // Add Bulk Data
-	table.Render()
+	printDecrypted(key, username, string(decryptedPassword), string(decryptedNote))
 
 	return nil
 }
