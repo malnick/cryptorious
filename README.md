@@ -36,9 +36,26 @@ GLOBAL OPTIONS:
    --debug                                                              Debug/Verbose log output.
    --help, -h                                                           show help
    --version, -v                                                        print the version
-   
-  
 ```
+
+### Decrypt Submenu
+```
+_________                            __                   .__                        
+\_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______
+/    \  \/ \_  __ \<   |  |\____ \ \   __\ /  _ \ \_  __ \|  | /  _ \ |  |  \ /  ___/
+\     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \ 
+ \______  / |__|    / ____||   __/  |__|   \____/  |__|   |__| \____/ |____/ /____  >
+        \/          \/     |__|                                                   \/ 
+NAME:
+   cryptorious decrypt - Decrypt a value in the vault `VALUE`
+
+USAGE:
+   cryptorious decrypt [command options] [arguments...]
+
+OPTIONS:
+   --copy, -c   Copy decrypted password to clipboard automatically
+```   
+
 
 ## Step 0: Build && Alias
 
@@ -84,7 +101,14 @@ _________                            __                   .__
 
 Will open a ncurses window with the decrypted vault entry. 
 
-## Step 4: I Compromised my keys!! 
+Forgo the the ncurses window and copy the decrypted password stright to the system clipboard? 
+```
+cryptorious decrypt -[c]opy thing
+```
+No printing, just a message that your decrypted password is now available in the paste buffer for your user. 
+
+## Step 4: Rotate Keys & Vault
+Compromised your keys? Not a problem. 
 
 ```
 cryptorious rotate
