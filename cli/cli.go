@@ -74,6 +74,13 @@ func Start() error {
 			Name:    "decrypt",
 			Aliases: []string{"d"},
 			Usage:   "Decrypt a value in the vault `VALUE`",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:        "copy, c",
+					Usage:       "Copy decrypted password to clipboard automatically",
+					Destination: &config.Clipboard,
+				},
+			},
 			Action: func(c *cli.Context) {
 				setLogger(config.DebugMode)
 				handleError(action.Decrypt(c.Args().First(), config))

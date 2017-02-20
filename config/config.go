@@ -21,11 +21,13 @@ type Config struct {
 	PublicKeyPath  string
 	VaultDir       string
 	VaultPath      string
+	Clipboard      bool
 }
 
 // set() configurations application level direcotories such as the .cryptorious $HOME dir, and .ssh if it does not exist.
 func (c *Config) setDefaults() error {
 	home := os.Getenv("HOME")
+	c.Clipboard = false
 	c.DebugMode = false
 	c.Version = VERSION
 	c.Revision = REVISION
