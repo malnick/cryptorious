@@ -13,6 +13,7 @@ import (
 	"github.com/atotto/clipboard"
 	"github.com/malnick/cryptorious/config"
 	"github.com/malnick/cryptorious/vault"
+	"github.com/skratchdot/open-golang/open"
 )
 
 func Decrypt(key string, c config.Config) error {
@@ -40,12 +41,28 @@ func Decrypt(key string, c config.Config) error {
 		return err
 	}
 
-	if c.Clipboard {
+	copyToClipboard := func() error {
 		log.Info("Copying decrypted password to clipboard!")
 		return clipboard.WriteAll(string(decryptedPassword))
+	}()
+
+	if c.Clipboard {
+		if err := copyToClipboard; err != nil {
+			return err
+		}
 	}
 
-	printDecrypted(key, username, string(decryptedPassword), string(decryptedNote))
+	if c.Goto {
+		log.Infof("Opening default browser and logging into https://%s", key)
+		if err := copyToClipboard; err != nil {
+			return err
+		}
+		if err := open.Start(fmt.Sprintf("https://%s", key)); err != nil {
+			return err
+		}
+	}
+
+	printDecrypted(key, username, string(decryptedPassword), string(decryptedNote), c.DecryptSessionTimeout)
 
 	return nil
 }

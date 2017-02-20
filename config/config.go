@@ -14,20 +14,21 @@ var (
 
 // Config{} is the complete application configuration
 type Config struct {
-	DebugMode      bool
-	Version        string
-	Revision       string
-	PrivateKeyPath string
-	PublicKeyPath  string
-	VaultDir       string
-	VaultPath      string
-	Clipboard      bool
+	DebugMode             bool
+	Version               string
+	Revision              string
+	PrivateKeyPath        string
+	PublicKeyPath         string
+	VaultDir              string
+	VaultPath             string
+	Clipboard             bool
+	Goto                  bool
+	DecryptSessionTimeout int
 }
 
 // set() configurations application level direcotories such as the .cryptorious $HOME dir, and .ssh if it does not exist.
 func (c *Config) setDefaults() error {
 	home := os.Getenv("HOME")
-	c.Clipboard = false
 	c.DebugMode = false
 	c.Version = VERSION
 	c.Revision = REVISION

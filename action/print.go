@@ -3,11 +3,12 @@ package action
 import (
 	"fmt"
 	"log"
+	"time"
 
 	gc "github.com/rthornton128/goncurses"
 )
 
-func printDecrypted(key, username, password, note string) {
+func printDecrypted(key, username, password, note string, sessionTimeout int) {
 	stdscr, _ := gc.Init()
 	defer gc.End()
 
@@ -65,6 +66,26 @@ func printDecrypted(key, username, password, note string) {
 	stdscr.MovePrint(row/2, (col / 2), password)
 	stdscr.MovePrint((row/2)+2, (col / 2), note)
 
+	go func() {
+		timer := time.NewTimer(time.Duration(sessionTimeout) * time.Second)
+		for {
+			select {
+			case <-timer.C:
+				stdscr.Erase()
+				stdscr.MovePrint(row/2, col/2, "Decrypt Session Expired")
+				stdscr.Refresh()
+				return
+
+			default:
+				stdscr.MovePrint(1, 1, fmt.Sprintf("Shutting down in %d seconds...", sessionTimeout))
+				sessionTimeout -= 1
+				time.Sleep(1 * time.Second)
+				stdscr.Refresh()
+			}
+		}
+	}()
 	stdscr.Refresh()
+
 	stdscr.GetChar()
+
 }

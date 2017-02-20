@@ -80,6 +80,17 @@ func Start() error {
 					Usage:       "Copy decrypted password to clipboard automatically",
 					Destination: &config.Clipboard,
 				},
+				cli.BoolFlag{
+					Name:        "goto, g",
+					Usage:       "Open your default browser to https://<key_name> and login automatically.",
+					Destination: &config.Goto,
+				},
+				cli.IntFlag{
+					Name:        "timeout, t",
+					Usage:       "Timeout in seconds for the decrypt session window to expire.",
+					Value:       10,
+					Destination: &config.DecryptSessionTimeout,
+				},
 			},
 			Action: func(c *cli.Context) {
 				setLogger(config.DebugMode)
