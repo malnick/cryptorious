@@ -90,13 +90,6 @@ Will open a ncurses window and prompt you for username, password and a secure no
 
 ```
 cryptorious decrypt thing
-_________                            __                   .__
-\_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______
-/    \  \/ \_  __ \<   |  |\____ \ \   __\ /  _ \ \_  __ \|  | /  _ \ |  |  \ /  ___/
-\     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \
- \______  / |__|    / ____||   __/  |__|   \____/  |__|   |__| \____/ |____/ /____  >
-        \/          \/     |__|                                                   \/
-# ncurses for the win.
 ```
 
 Will open a ncurses window with the decrypted vault entry. 
