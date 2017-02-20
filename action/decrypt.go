@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/atotto/clipboard"
 	"github.com/malnick/cryptorious/config"
 	"github.com/malnick/cryptorious/vault"
 )
@@ -37,6 +38,11 @@ func Decrypt(key string, c config.Config) error {
 	decryptedNote, err := decryptValue(priv, encryptedNote)
 	if err != nil {
 		return err
+	}
+
+	if c.Clipboard {
+		log.Info("Copying decrypted password to clipboard!")
+		return clipboard.WriteAll(string(decryptedPassword))
 	}
 
 	printDecrypted(key, username, string(decryptedPassword), string(decryptedNote))

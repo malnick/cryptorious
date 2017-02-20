@@ -9,7 +9,6 @@ import (
 )
 
 func printDecrypted(key, username, password, note string) {
-
 	stdscr, _ := gc.Init()
 	defer gc.End()
 
