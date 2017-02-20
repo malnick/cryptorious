@@ -15,27 +15,8 @@ import (
 )
 
 func Decrypt(key string, c config.Config) error {
-	privData, err := ioutil.ReadFile(c.PrivateKeyPath)
+	priv, err := createPrivateKey(c.PrivateKeyPath)
 	if err != nil {
-		log.Errorf("%s was not found. Try `generate` first.", c.PrivateKeyPath)
-		return err
-	}
-	log.Debug("Private key file: ", c.PrivateKeyPath)
-
-	// Extract the PEM-encoded data block
-	block, _ := pem.Decode(privData)
-	if block == nil {
-		log.Error("bad key data: %s", "not PEM-encoded")
-		return err
-	}
-	if got, want := block.Type, "RSA PRIVATE KEY"; got != want {
-		log.Error("unknown key type %q, want %q", got, want)
-		return err
-	}
-	// Decode the RSA private key
-	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		log.Error("bad private key: %s", err)
 		return err
 	}
 
@@ -61,6 +42,33 @@ func Decrypt(key string, c config.Config) error {
 	printDecrypted(key, username, string(decryptedPassword), string(decryptedNote))
 
 	return nil
+}
+
+func createPrivateKey(path string) (*rsa.PrivateKey, error) {
+	privData, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Errorf("%s was not found. Try `generate` first.", path)
+		return nil, err
+	}
+	log.Debug("Private key file: ", path)
+
+	// Extract the PEM-encoded data block
+	block, _ := pem.Decode(privData)
+	if block == nil {
+		log.Error("bad key data: %s", "not PEM-encoded")
+		return nil, err
+	}
+	if got, want := block.Type, "RSA PRIVATE KEY"; got != want {
+		log.Error("unknown key type %q, want %q", got, want)
+		return nil, err
+	}
+	// Decode the RSA private key
+	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		log.Error("bad private key: %s", err)
+		return nil, err
+	}
+	return priv, nil
 }
 
 func decryptValue(privkey *rsa.PrivateKey, encryptedValue string) ([]byte, error) {
