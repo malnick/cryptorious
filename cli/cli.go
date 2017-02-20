@@ -55,6 +55,24 @@ func Start() error {
 
 	app.Commands = []cli.Command{
 		{
+			Name:  "rename",
+			Usage: "Rename an entry in the vault",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "old, o",
+					Usage: "Name of old entry name [key] in vault",
+				},
+				cli.StringFlag{
+					Name:  "new, n",
+					Usage: "Name of new entry name [key] in vault",
+				},
+			},
+			Action: func(c *cli.Context) {
+				setLogger(config.DebugMode)
+				handleError(action.RenameVaultEntry(c.String("old"), c.String("new"), config.VaultPath))
+			},
+		},
+		{
 			Name:  "rotate",
 			Usage: "Rotate your cryptorious SSH keys and vault automatically",
 			Action: func(c *cli.Context) {
