@@ -4,35 +4,40 @@ Like 1Password but for the CLI. Stores your encrypted data in eyaml using generi
 
 ## Manpage
 ```
-_________                            __                   .__
+_________                            __                   .__                        
 \_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______
 /    \  \/ \_  __ \<   |  |\____ \ \   __\ /  _ \ \_  __ \|  | /  _ \ |  |  \ /  ___/
-\     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \
+\     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \ 
  \______  / |__|    / ____||   __/  |__|   \____/  |__|   |__| \____/ |____/ /____  >
-        \/          \/     |__|                                                   \/
+        \/          \/     |__|                                                   \/ 
 NAME:
    cryptorious - CLI-based encryption for passwords and random data
 
 USAGE:
    cryptorious [global options] command [command options] [arguments...]
-
+   
 VERSION:
-   0.0.1-8-gfa64852
-
+   0.3.1
+   
 AUTHOR(S):
-   Jeff Malnick <malnick@gmail.com>
-
+   Jeff Malnick <malnick@gmail.com> 
+   
 COMMANDS:
+    rotate      Rotate your cryptorious SSH keys and vault automatically
+    delete      Remove an entry from the cryptorious vault
     decrypt     Decrypt a value in the vault `VALUE`
     encrypt     Encrypt a value for the vault `VALUE`
     generate    Generate a unique RSA public and private key pair for a user specified by user_name or with -user
 
 GLOBAL OPTIONS:
-   --vault-path, --vp "/Users/malnick/.cryptorious/vault.yaml"          Path to vault.yaml.
-   --private-key, --priv "/Users/malnick/.ssh/cryptorious_privatekey"   Path to private key.
-   --public-key, --pub "/Users/malnick/.ssh/cryptorious_publickey"      Path to public key.
+   --vault-path, --vp "/home/malnick/.cryptorious/vault.yaml"           Path to vault.yaml.
+   --private-key, --priv "/home/malnick/.ssh/cryptorious_privatekey"    Path to private key.
+   --public-key, --pub "/home/malnick/.ssh/cryptorious_publickey"       Path to public key.
+   --debug                                                              Debug/Verbose log output.
    --help, -h                                                           show help
    --version, -v                                                        print the version
+   
+  
 ```
 
 ## Step 0: Build && Alias
