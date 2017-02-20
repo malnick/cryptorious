@@ -60,39 +60,57 @@ func printWithMenu(menuItems []string, v vault.Vault) error {
 	defer gc.End()
 	stdscr := getDefaultScreen()
 
+	const (
+		HEIGHT = 10
+		WIDTH  = 40
+	)
+
 	gc.StartColor()
 	gc.Raw(true)
 	gc.Echo(false)
 	gc.Cursor(0)
 	stdscr.Keypad(true)
-	gc.InitPair(1, gc.C_RED, gc.C_BLACK)
-	gc.InitPair(2, gc.C_GREEN, gc.C_BLACK)
-	gc.InitPair(3, gc.C_MAGENTA, gc.C_BLACK)
 
 	items := make([]*gc.MenuItem, len(menuItems))
 	for i, val := range menuItems {
 		items[i], _ = gc.NewItem(val, "")
 		defer items[i].Free()
-
-		if i == 2 || i == 4 {
-			items[i].Selectable(false)
-		}
 	}
 
 	// create the menu
 	menu, _ := gc.NewMenu(items)
 	defer menu.Free()
 
-	y, _ := stdscr.MaxYX()
-	stdscr.MovePrint(y-3, 0, "Use up/down arrows to move; 'q' to exit")
-	stdscr.Refresh()
+	menuwin, _ := gc.NewWindow(HEIGHT, WIDTH, 4, 14)
+	menuwin.Keypad(true)
 
-	menu.SetForeground(gc.ColorPair(1) | gc.A_REVERSE)
-	menu.SetBackground(gc.ColorPair(2) | gc.A_BOLD)
-	menu.Grey(gc.ColorPair(3) | gc.A_BOLD)
+	menu.SetWindow(menuwin)
+	dwin := menuwin.Derived(6, 38, 3, 1)
+	menu.SubWindow(dwin)
+	//menu.Option(gc.O_SHOWDESC, true)
+	menu.Format(5, 1)
+	menu.Mark(" * ")
+
+	// MovePrint centered menu title
+	title := "Cryptorious Vault"
+	menuwin.Box(0, 0)
+	menuwin.ColorOn(1)
+	menuwin.MovePrint(1, (WIDTH/2)-(len(title)/2), title)
+	menuwin.ColorOff(1)
+	menuwin.MoveAddChar(2, 0, gc.ACS_LTEE)
+	menuwin.HLine(2, 1, gc.ACS_HLINE, WIDTH-2)
+	menuwin.MoveAddChar(2, WIDTH-1, gc.ACS_RTEE)
+
+	y, _ := stdscr.MaxYX()
+	stdscr.ColorOn(2)
+	stdscr.MovePrint(y-3, 1,
+		"Use up/down arrows or page up/down to navigate. 'q' to exit")
+	stdscr.ColorOff(2)
+	stdscr.Refresh()
 
 	menu.Post()
 	defer menu.UnPost()
+	menuwin.Refresh()
 
 	for {
 		gc.Update()
@@ -111,11 +129,10 @@ func printWithMenu(menuItems []string, v vault.Vault) error {
 			username := v.Data[entry].Username
 			note := v.Data[entry].SecureNote
 			printDecrypted(entry, username, password, note, 5)
-
-			stdscr.Printf("Item selected is: %s", menu.Current(nil).Name())
-			menu.PositionCursor()
+			return nil
 		default:
 			menu.Driver(gc.DriverActions[ch])
+			menuwin.Refresh()
 		}
 	}
 }
