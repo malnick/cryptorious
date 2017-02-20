@@ -119,9 +119,9 @@ func Start() error {
 				{
 					Name:  "all",
 					Usage: "Decrypt the entire vault",
-					Action: func(c *cli.Context) error {
+					Action: func(c *cli.Context) {
 						setLogger(config.DebugMode)
-						handleError()
+						handleError(action.PrintAll(config))
 					},
 				},
 			},

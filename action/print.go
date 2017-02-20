@@ -2,18 +2,130 @@ package action
 
 import (
 	"fmt"
-	"log"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
+	"github.com/malnick/cryptorious/config"
+	"github.com/malnick/cryptorious/vault"
 	gc "github.com/rthornton128/goncurses"
 )
 
-func printDecrypted(key, username, password, note string, sessionTimeout int) {
-	stdscr, _ := gc.Init()
+func PrintAll(c config.Config) error {
+	log.Info("Opening session for all entries in vault")
+	v, err := getDecryptedVault(c)
+	if err != nil {
+		return err
+	}
+
+	menuItems := []string{}
+	for entryName, _ := range v.Data {
+		menuItems = append(menuItems, entryName)
+	}
+
+	printWithMenu(menuItems, v)
+	return nil
+}
+
+func getDecryptedVault(c config.Config) (vault.Vault, error) {
+	v, err := vault.New(c.VaultPath)
+	if err != nil {
+		return v, err
+	}
+
+	key, err := createPrivateKey(c.PrivateKeyPath)
+	if err != nil {
+		return v, err
+	}
+	if err := v.Load(); err != nil {
+		return v, err
+	}
+	for name, _ := range v.Data {
+		decryptedPassword, err := decryptValue(key, v.Data[name].Password)
+		if err != nil {
+			return v, err
+		}
+		v.Data[name].Password = string(decryptedPassword)
+
+		decryptedNote, err := decryptValue(key, v.Data[name].SecureNote)
+		if err != nil {
+			return v, err
+		}
+		v.Data[name].SecureNote = string(decryptedNote)
+	}
+
+	return v, nil
+}
+
+func printWithMenu(menuItems []string, v vault.Vault) error {
 	defer gc.End()
+	stdscr := getDefaultScreen()
+
+	gc.StartColor()
+	gc.Raw(true)
+	gc.Echo(false)
+	gc.Cursor(0)
+	stdscr.Keypad(true)
+	gc.InitPair(1, gc.C_RED, gc.C_BLACK)
+	gc.InitPair(2, gc.C_GREEN, gc.C_BLACK)
+	gc.InitPair(3, gc.C_MAGENTA, gc.C_BLACK)
+
+	items := make([]*gc.MenuItem, len(menuItems))
+	for i, val := range menuItems {
+		items[i], _ = gc.NewItem(val, "")
+		defer items[i].Free()
+
+		if i == 2 || i == 4 {
+			items[i].Selectable(false)
+		}
+	}
+
+	// create the menu
+	menu, _ := gc.NewMenu(items)
+	defer menu.Free()
+
+	y, _ := stdscr.MaxYX()
+	stdscr.MovePrint(y-3, 0, "Use up/down arrows to move; 'q' to exit")
+	stdscr.Refresh()
+
+	menu.SetForeground(gc.ColorPair(1) | gc.A_REVERSE)
+	menu.SetBackground(gc.ColorPair(2) | gc.A_BOLD)
+	menu.Grey(gc.ColorPair(3) | gc.A_BOLD)
+
+	menu.Post()
+	defer menu.UnPost()
+
+	for {
+		gc.Update()
+		ch := stdscr.GetChar()
+		switch ch {
+		case ' ':
+			menu.Driver(gc.REQ_TOGGLE)
+		case 'q':
+			return nil
+		case gc.KEY_RETURN:
+			stdscr.Move(20, 0)
+			stdscr.ClearToEOL()
+
+			entry := menu.Current(nil).Name()
+			password := v.Data[entry].Password
+			username := v.Data[entry].Username
+			note := v.Data[entry].SecureNote
+			printDecrypted(entry, username, password, note, 5)
+
+			stdscr.Printf("Item selected is: %s", menu.Current(nil).Name())
+			menu.PositionCursor()
+		default:
+			menu.Driver(gc.DriverActions[ch])
+		}
+	}
+}
+
+func printDecrypted(key, username, password, note string, sessionTimeout int) {
+	defer gc.End()
+	stdscr := getDefaultScreen()
 
 	if !gc.HasColors() {
-		log.Fatal("Example requires a colour capable terminal")
+		log.Fatal("Cryptorious requires a colour capable terminal")
 	}
 
 	// Must be called after Init but before using any colour related functions
@@ -88,4 +200,23 @@ func printDecrypted(key, username, password, note string, sessionTimeout int) {
 
 	stdscr.GetChar()
 
+}
+
+func getDefaultScreen() *gc.Window {
+	stdscr, _ := gc.Init()
+
+	if !gc.HasColors() {
+		log.Fatal("Cryptorious requires a colour capable terminal")
+	}
+
+	// Must be called after Init but before using any colour related functions
+	if err := gc.StartColor(); err != nil {
+		log.Fatal(err)
+	}
+
+	gc.InitPair(1, gc.C_RED, gc.C_BLACK)
+	gc.InitPair(2, gc.C_WHITE, gc.C_BLACK)
+	gc.InitPair(3, gc.C_BLUE, gc.C_BLACK)
+
+	return stdscr
 }
