@@ -24,6 +24,7 @@ type Config struct {
 	Clipboard             bool
 	Goto                  bool
 	DecryptSessionTimeout int
+	PrintAll              bool
 }
 
 // set() configurations application level direcotories such as the .cryptorious $HOME dir, and .ssh if it does not exist.

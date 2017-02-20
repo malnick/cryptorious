@@ -20,6 +20,7 @@ func Start() error {
 	app.Version = config.Version
 	app.Name = "cryptorious"
 	app.Usage = "CLI-based encryption for passwords and random data"
+	app.EnableBashCompletion = true
 	app.Authors = []cli.Author{
 		{
 			Name:  "Jeff Malnick",
@@ -113,6 +114,16 @@ func Start() error {
 			Action: func(c *cli.Context) {
 				setLogger(config.DebugMode)
 				handleError(action.Decrypt(c.Args().First(), config))
+			},
+			Subcommands: []cli.Command{
+				{
+					Name:  "all",
+					Usage: "Decrypt the entire vault",
+					Action: func(c *cli.Context) error {
+						setLogger(config.DebugMode)
+						handleError()
+					},
+				},
 			},
 		},
 		{
