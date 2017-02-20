@@ -3,6 +3,7 @@
 Like 1Password but for the CLI. Stores your encrypted data in eyaml using generic SSH keys as the basis for encryption/decryption so you never have to type a password to get your passwords ever again.
 
 ## Manpage
+### Main Menu
 ```
 _________                            __                   .__                        
 \_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______
@@ -17,7 +18,7 @@ USAGE:
    cryptorious [global options] command [command options] [arguments...]
    
 VERSION:
-   0.3.1
+   1.0.0
    
 AUTHOR(S):
    Jeff Malnick <malnick@gmail.com> 
@@ -37,9 +38,8 @@ GLOBAL OPTIONS:
    --help, -h                                                           show help
    --version, -v                                                        print the version
 ```
-
-### Decrypt Submenu
-```
+### Decrypt Sub Menu
+```   
 _________                            __                   .__                        
 \_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______
 /    \  \/ \_  __ \<   |  |\____ \ \   __\ /  _ \ \_  __ \|  | /  _ \ |  |  \ /  ___/
@@ -53,7 +53,10 @@ USAGE:
    cryptorious decrypt [command options] [arguments...]
 
 OPTIONS:
-   --copy, -c   Copy decrypted password to clipboard automatically
+   --copy, -c           Copy decrypted password to clipboard automatically
+   --goto, -g           Open your default browser to https://<key_name> and login automatically.
+   --timeout, -t "10"   Timeout in seconds for the decrypt session window to expire.
+
 ```   
 
 
