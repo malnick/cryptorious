@@ -18,9 +18,8 @@ func Start() error {
 	handleError(cErr)
 	app := cli.NewApp()
 	app.Version = config.Version
-	app.Name = "cryptorious"
+	app.Name = printBanner()
 	app.Usage = "CLI-based encryption for passwords and random data"
-	app.EnableBashCompletion = true
 	app.Authors = []cli.Author{
 		{
 			Name:  "Jeff Malnick",
@@ -153,10 +152,31 @@ func Start() error {
 			Name:    "generate",
 			Aliases: []string{"g"},
 			Usage:   "Generate a unique RSA public and private key pair for a user specified by user_name or with -user",
-			Action: func(c *cli.Context) {
-				setLogger(config.DebugMode)
-				fmt.Println("Generating new RSA public/private key pair for ", c.Args().First())
-				handleError(action.GenerateKeys(config))
+			Subcommands: []cli.Command{
+				{
+					Name:  "keys",
+					Usage: "Generate SSH key pair for cryptorious",
+					Action: func(c *cli.Context) {
+						setLogger(config.DebugMode)
+						fmt.Println("Generating new RSA public/private key pair for ", c.Args().First())
+						handleError(action.GenerateKeys(config))
+					},
+				},
+				{
+					Name:  "password",
+					Usage: "Generate a random password",
+					Flags: []cli.Flag{
+						cli.IntFlag{
+							Name:  "length, l",
+							Usage: "Length of the password to generate",
+							Value: 15,
+						},
+					},
+					Action: func(c *cli.Context) {
+						setLogger(config.DebugMode)
+						handleError(action.NewPassword(c.Int("length")))
+					},
+				},
 			},
 		},
 	}
@@ -165,13 +185,16 @@ func Start() error {
 	return nil
 }
 
-func printBanner() {
-	fmt.Println(`_________                            __                   .__                        `)
-	fmt.Println(`\_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______`)
-	fmt.Println(`/    \  \/ \_  __ \<   |  |\____ \ \   __\ /  _ \ \_  __ \|  | /  _ \ |  |  \ /  ___/`)
-	fmt.Println(`\     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \ `)
-	fmt.Println(` \______  / |__|    / ____||   __/  |__|   \____/  |__|   |__| \____/ |____/ /____  >`)
-	fmt.Println(`        \/          \/     |__|                                                   \/ `)
+func printBanner() string {
+	banner := `
+ _________                            __                   .__                        
+ \_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______
+ /    \  \/ \_  __ \<   |  |\____ \ \   __\ /  _ \ \_  __ \|  | /  _ \ |  |  \ /  ___/
+ \     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \ 
+  \______  / |__|    / ____||   __/  |__|   \____/  |__|   |__| \____/ |____/ /____  >
+         \/          \/     |__|                                                   \/ 
+`
+	return banner
 }
 
 func handleError(err error) {

@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 
@@ -66,4 +67,39 @@ func GenerateKeys(c config.Config) error {
 	log.Info("Public Key: ", pubPath)
 	fmt.Println(string(pubBytes))
 	return nil
+}
+
+var StdChars = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+,.?/:;{}[]`~")
+
+func NewPassword(length int) error {
+	p, err := randomPassword(length, StdChars)
+	fmt.Println(p)
+	return err
+
+}
+
+func randomPassword(length int, chars []byte) (string, error) {
+	// https://raw.githubusercontent.com/cmiceli/password-generator-go/master/gen.go
+
+	newPassword := make([]byte, length)
+	randomData := make([]byte, length+(length/4)) // storage for random bytes.
+	clen := byte(len(chars))
+	maxrb := byte(256 - (256 % len(chars)))
+	i := 0
+	for {
+		if _, err := io.ReadFull(rand.Reader, randomData); err != nil {
+			return string(newPassword), err
+		}
+		for _, c := range randomData {
+			if c >= maxrb {
+				continue
+			}
+			newPassword[i] = chars[c%clen]
+			i++
+			if i == length {
+				return string(newPassword), nil
+			}
+		}
+	}
+
 }
