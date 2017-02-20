@@ -21,12 +21,13 @@ USAGE:
    cryptorious [global options] command [command options] [arguments...]
    
 VERSION:
-   1.0.0
+   1.1.0
    
 AUTHOR(S):
    Jeff Malnick <malnick@gmail.com> 
    
 COMMANDS:
+    rename      Rename an entry in the vault
     rotate      Rotate your cryptorious SSH keys and vault automatically
     delete      Remove an entry from the cryptorious vault
     decrypt     Decrypt a value in the vault `VALUE`
@@ -43,12 +44,6 @@ GLOBAL OPTIONS:
 ```
 ### Decrypt Sub Menu
 ```   
-_________                            __                   .__                        
-\_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______
-/    \  \/ \_  __ \<   |  |\____ \ \   __\ /  _ \ \_  __ \|  | /  _ \ |  |  \ /  ___/
-\     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \ 
- \______  / |__|    / ____||   __/  |__|   \____/  |__|   |__| \____/ |____/ /____  >
-        \/          \/     |__|                                                   \/ 
 NAME:
    cryptorious decrypt - Decrypt a value in the vault `VALUE`
 
@@ -59,8 +54,19 @@ OPTIONS:
    --copy, -c           Copy decrypted password to clipboard automatically
    --goto, -g           Open your default browser to https://<key_name> and login automatically.
    --timeout, -t "10"   Timeout in seconds for the decrypt session window to expire.
-
 ```   
+### Rename Sub Menu
+```
+NAME:
+   cryptorious rename - Rename an entry in the vault
+
+USAGE:
+   cryptorious rename [command options] [arguments...]
+
+OPTIONS:
+   --old, -o    Name of old entry name [key] in vault
+   --new, -n    Name of new entry name [key] in vault
+```
 
 
 ## Step 0: Build && Alias
