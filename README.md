@@ -78,3 +78,15 @@ _________                            __                   .__
 ```
 
 Will open a ncurses window with the decrypted vault entry. 
+
+## Step 4: I Compromised my keys!! 
+
+```
+cryptorious rotate
+```
+
+1. Backs up your old keys to `keyPath.bak`
+1. Backs up your old vault to `vaultPath.bak`
+1. Generates new keys to `keyPath`
+1. Decrypts vault using `privateKey.bak` and encrypts vault in place with new `privateKey`
+1. Writes the vault back to disk at `vaultPath`

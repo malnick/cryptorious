@@ -56,7 +56,7 @@ func Start() error {
 	app.Commands = []cli.Command{
 		{
 			Name:  "rotate",
-			Usage: "Rotate your cryptorious SSH keys automatically",
+			Usage: "Rotate your cryptorious SSH keys and vault automatically",
 			Action: func(c *cli.Context) {
 				setLogger(config.DebugMode)
 				handleError(action.RotateVault(config))
