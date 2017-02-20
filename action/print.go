@@ -22,7 +22,7 @@ func PrintAll(c config.Config) error {
 		menuItems = append(menuItems, entryName)
 	}
 
-	printWithMenu(menuItems, v)
+	printWithMenu(menuItems, v, c.DecryptSessionTimeout)
 	return nil
 }
 
@@ -56,7 +56,7 @@ func getDecryptedVault(c config.Config) (vault.Vault, error) {
 	return v, nil
 }
 
-func printWithMenu(menuItems []string, v vault.Vault) error {
+func printWithMenu(menuItems []string, v vault.Vault, timeout int) error {
 	defer gc.End()
 	stdscr := getDefaultScreen()
 
@@ -128,7 +128,7 @@ func printWithMenu(menuItems []string, v vault.Vault) error {
 			password := v.Data[entry].Password
 			username := v.Data[entry].Username
 			note := v.Data[entry].SecureNote
-			printDecrypted(entry, username, password, note, 5)
+			printDecrypted(entry, username, password, note, timeout)
 			return nil
 		default:
 			menu.Driver(gc.DriverActions[ch])
