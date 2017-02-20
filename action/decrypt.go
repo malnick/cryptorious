@@ -41,23 +41,16 @@ func Decrypt(key string, c config.Config) error {
 		return err
 	}
 
-	copyToClipboard := func() error {
-		log.Info("Copying decrypted password to clipboard!")
-		return clipboard.WriteAll(string(decryptedPassword))
-	}()
-
 	if c.Clipboard {
-		if err := copyToClipboard; err != nil {
+		log.Info("Copying decrypted password to clipboard!")
+		if err := clipboard.WriteAll(string(decryptedPassword)); err != nil {
 			return err
 		}
 	}
 
 	if c.Goto {
 		log.Infof("Opening default browser and logging into https://%s", key)
-		if err := copyToClipboard; err != nil {
-			return err
-		}
-		if err := open.Start(fmt.Sprintf("https://%s", key)); err != nil {
+		if err := open.Run(fmt.Sprintf("https://%s", key)); err != nil {
 			return err
 		}
 	}
