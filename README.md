@@ -3,6 +3,7 @@
 Like 1Password but for the CLI. Stores your encrypted data in eyaml using generic SSH keys as the basis for encryption/decryption so you never have to type a password to get your passwords ever again.
 
 ## Download
+- Linux AMD64 | [v1.2.1](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.2.1)
 - Linux AMD64 | [v1.2.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.2.0)
 - Linux AMD64 | [v1.1.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.1.0)
 - Linux AMD64 | [v1.0.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious)
@@ -10,39 +11,41 @@ Like 1Password but for the CLI. Stores your encrypted data in eyaml using generi
 ## Manpage
 ### Main Menu
 ```
-_________                            __                   .__                        
-\_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______
-/    \  \/ \_  __ \<   |  |\____ \ \   __\ /  _ \ \_  __ \|  | /  _ \ |  |  \ /  ___/
-\     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \ 
- \______  / |__|    / ____||   __/  |__|   \____/  |__|   |__| \____/ |____/ /____  >
-        \/          \/     |__|                                                   \/ 
 NAME:
-   cryptorious - CLI-based encryption for passwords and random data
+   
+ _________                            __                   .__                        
+ \_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______
+ /    \  \/ \_  __ \<   |  |\____ \ \   __\ /  _ \ \_  __ \|  | /  _ \ |  |  \ /  ___/
+ \     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \ 
+  \______  / |__|    / ____||   __/  |__|   \____/  |__|   |__| \____/ |____/ /____  >
+         \/          \/     |__|                                                   \/ 
+ - CLI-based encryption for passwords and random data
 
 USAGE:
    cryptorious [global options] command [command options] [arguments...]
    
 VERSION:
-   1.1.0
+   1.2.1
    
 AUTHOR(S):
    Jeff Malnick <malnick@gmail.com> 
    
 COMMANDS:
-    rename      Rename an entry in the vault
-    rotate      Rotate your cryptorious SSH keys and vault automatically
-    delete      Remove an entry from the cryptorious vault
-    decrypt     Decrypt a value in the vault `VALUE`
-    encrypt     Encrypt a value for the vault `VALUE`
-    generate    Generate a unique RSA public and private key pair for a user specified by user_name or with -user
+    rename	Rename an entry in the vault
+    rotate	Rotate your cryptorious SSH keys and vault automatically
+    delete	Remove an entry from the cryptorious vault
+    decrypt	Decrypt a value in the vault `VALUE`
+    encrypt	Encrypt a value for the vault `VALUE`
+    generate	Generate a unique RSA public and private key pair for a user specified by user_name or with -user
 
 GLOBAL OPTIONS:
-   --vault-path, --vp "/home/malnick/.cryptorious/vault.yaml"           Path to vault.yaml.
-   --private-key, --priv "/home/malnick/.ssh/cryptorious_privatekey"    Path to private key.
-   --public-key, --pub "/home/malnick/.ssh/cryptorious_publickey"       Path to public key.
-   --debug                                                              Debug/Verbose log output.
-   --help, -h                                                           show help
-   --version, -v                                                        print the version
+   --vault-path, --vp "/home/malnick/.cryptorious/vault.yaml"		Path to vault.yaml.
+   --private-key, --priv "/home/malnick/.ssh/cryptorious_privatekey"	Path to private key.
+   --public-key, --pub "/home/malnick/.ssh/cryptorious_publickey"	Path to public key.
+   --debug								Debug/Verbose log output.
+   --help, -h								show help
+   --version, -v							print the version
+
 ```
 ### Decrypt Sub Menu
 ```   
@@ -69,7 +72,22 @@ OPTIONS:
    --old, -o    Name of old entry name [key] in vault
    --new, -n    Name of new entry name [key] in vault
 ```
+### Generate Sub Menu
+```
+NAME:
+ generate - Generate a unique RSA public and private key pair for a user specified by user_name or with -user
 
+USAGE:
+  generate command [command options] [arguments...]
+
+COMMANDS:
+    keys	Generate SSH key pair for cryptorious
+    password	Generate a random password
+
+OPTIONS:
+   --help, -h	show help
+
+```
 
 ## Step 0: Build && Alias
 
