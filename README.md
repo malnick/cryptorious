@@ -3,10 +3,14 @@
 Like 1Password but for the CLI. Stores your encrypted data in eyaml using generic SSH keys as the basis for encryption/decryption so you never have to type a password to get your passwords ever again.
 
 ## Download
-- Linux AMD64 | [v1.2.1](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.2.1)
-- Linux AMD64 | [v1.2.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.2.0)
-- Linux AMD64 | [v1.1.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.1.0)
-- Linux AMD64 | [v1.0.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious)
+### Linux
+- AMD64 | [v1.2.1](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.2.1)
+- AMD64 | [v1.2.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.2.0)
+- AMD64 | [v1.1.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.1.0)
+- AMD64 | [v1.0.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious)
+
+### Darwin (OSx)
+- AMD64 | [v1.2.1](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.2.1_darwin)
 
 ## Manpage
 ### Main Menu
