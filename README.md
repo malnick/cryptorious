@@ -102,7 +102,7 @@ Add to your `.[bash | zsh | whatever]rc`: `alias cpt=cryptorious`
 ## Step 1: Generate keys
 
 ```
-cryptorious generate 
+cryptorious generate keys 
 ```
 
 Defaults to placing keys in ```$HOME/.ssh/cryptorious_privatekey``` and ```$HOME/.ssh/cryptorious_publickey```.
@@ -110,8 +110,11 @@ Defaults to placing keys in ```$HOME/.ssh/cryptorious_privatekey``` and ```$HOME
 You can override this with ```--private-key``` and ```--public-key```:
 
 ```
-cryptorious generate --private-key foo_priv --public-key foo_pub 
+cryptorious generate keys --private-key foo_priv --public-key foo_pub 
 ```
+
+### Lock It Down
+If you want to win extra security stars, lock down your keys with root ownership. By default they're already read/write by the user who ran the `cryptorious` command (0600), but you can increase this security more with `chmod root:root ~/.ssh/cryptorious_privatekey`. Now you'll have to run `cryptorious` with `sudo` and enter in your root password (ugh, passwords..) every time. 
 
 ## Step 2: Encrypt
 
@@ -136,6 +139,11 @@ cryptorious decrypt -[c]opy thing
 ```
 No printing, just a message that your decrypted password is now available in the paste buffer for your user. 
 
+If you've saved your vault entries with the URI of the site they belong to (i.e., ran `cryptorious encrypt github.com`...) then you can use the `-[g]oto` flag to open your default browser to this URI. Pair it with `-[c]opy` and the shorthand for `[d]ecrypt` and you'll have a fast way of navigating directly to your desired, secure website (let's also assume you've aliased `cpt=cryptorious`):
+```
+cpt d -g -c github.com
+```
+
 ## Step 4: Rotate Keys & Vault
 Compromised your keys? Not a problem. 
 
@@ -148,3 +156,12 @@ cryptorious rotate
 1. Generates new keys to `keyPath`
 1. Decrypts vault using `privateKey.bak` and encrypts vault in place with new `privateKey`
 1. Writes the vault back to disk at `vaultPath`
+
+## Step 5: Generate Secure Password
+The `generate` command also lets you generate random, secure passwords of `n` length:
+```
+cryptorious generate password --length 20
+(yZkj,GX`w7T4x&TaYyw
+```
+
+This defaults to a length of 15 if you don't pass --[l]ength.
