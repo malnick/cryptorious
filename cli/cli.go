@@ -151,7 +151,7 @@ func Start() error {
 		{
 			Name:    "generate",
 			Aliases: []string{"g"},
-			Usage:   "Generate a unique RSA public and private key pair for a user specified by user_name or with -user",
+			Usage:   "Generate a RSA keys or a secure password.",
 			Subcommands: []cli.Command{
 				{
 					Name:  "keys",

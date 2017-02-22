@@ -35,20 +35,20 @@ AUTHOR(S):
    Jeff Malnick <malnick@gmail.com> 
    
 COMMANDS:
-    rename	Rename an entry in the vault
-    rotate	Rotate your cryptorious SSH keys and vault automatically
-    delete	Remove an entry from the cryptorious vault
-    decrypt	Decrypt a value in the vault `VALUE`
-    encrypt	Encrypt a value for the vault `VALUE`
-    generate	Generate a unique RSA public and private key pair for a user specified by user_name or with -user
+    rename	 Rename an entry in the vault
+    rotate	 Rotate your cryptorious SSH keys and vault automatically
+    delete	 Remove an entry from the cryptorious vault
+    decrypt	 Decrypt a value in the vault `VALUE`
+    encrypt	 Encrypt a value for the vault `VALUE`
+    generate Generate a RSA keys or a secure password.	
 
 GLOBAL OPTIONS:
-   --vault-path, --vp "/home/malnick/.cryptorious/vault.yaml"		Path to vault.yaml.
-   --private-key, --priv "/home/malnick/.ssh/cryptorious_privatekey"	Path to private key.
-   --public-key, --pub "/home/malnick/.ssh/cryptorious_publickey"	Path to public key.
-   --debug								Debug/Verbose log output.
-   --help, -h								show help
-   --version, -v							print the version
+   --vault-path, --vp "/home/malnick/.cryptorious/vault.yaml"         Path to vault.yaml
+   --private-key, --priv "/home/malnick/.ssh/cryptorious_privatekey"  Path to private key
+   --public-key, --pub "/home/malnick/.ssh/cryptorious_publickey"     Path to public key
+   --debug                                                            Debug/Verbose log output
+   --help, -h                                                         Show help
+   --version, -v                                                      Print the version
 
 ```
 ### Decrypt Sub Menu
@@ -61,8 +61,8 @@ USAGE:
 
 OPTIONS:
    --copy, -c           Copy decrypted password to clipboard automatically
-   --goto, -g           Open your default browser to https://<key_name> and login automatically.
-   --timeout, -t "10"   Timeout in seconds for the decrypt session window to expire.
+   --goto, -g           Open your default browser to https://<key_name> and login automatically
+   --timeout, -t "10"   Timeout in seconds for the decrypt session window to expire
 ```   
 ### Rename Sub Menu
 ```
@@ -79,14 +79,14 @@ OPTIONS:
 ### Generate Sub Menu
 ```
 NAME:
- generate - Generate a unique RSA public and private key pair for a user specified by user_name or with -user
+ generate - 	Generate a RSA keys or a secure password 
 
 USAGE:
   generate command [command options] [arguments...]
 
 COMMANDS:
-    keys	Generate SSH key pair for cryptorious
-    password	Generate a random password
+    keys	                 Generate SSH key pair for cryptorious
+    password	[--[l]ength] Generate a random password
 
 OPTIONS:
    --help, -h	show help
@@ -154,7 +154,7 @@ cryptorious rotate
 1. Backs up your old keys to `keyPath.bak`
 1. Backs up your old vault to `vaultPath.bak`
 1. Generates new keys to `keyPath`
-1. Decrypts vault using `privateKey.bak` and encrypts vault in place with new `privateKey`
+1. Decrypts vault using `cryptorious_privatekey.bak` and encrypts vault in place with new `cryptorious_publickey`
 1. Writes the vault back to disk at `vaultPath`
 
 ## Step 5: Generate Secure Password
