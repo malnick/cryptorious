@@ -1,56 +1,50 @@
 # [![CircleCI](https://circleci.com/gh/malnick/cryptorious.svg?style=svg)](https://circleci.com/gh/malnick/cryptorious)
 
-Like 1Password but for the CLI. Stores your encrypted data in eyaml using generic SSH keys as the basis for encryption/decryption so you never have to type a password to get your passwords ever again.
-
-## Download
-### Linux
-- AMD64 | [v1.2.1](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.2.1)
-- AMD64 | [v1.2.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.2.0)
-- AMD64 | [v1.1.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.1.0)
-- AMD64 | [v1.0.0](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious)
-
-### Darwin (OSx)
-- AMD64 | [v1.2.1](https://dl.dropboxusercontent.com/u/77193293/tools/cryptorious_1.2.1_darwin)
+Like 1Password but for the CLI.
 
 ## Manpage
 ### Main Menu
 ```
-NAME:
-   
- _________                            __                   .__                        
+ _________                            __                   .__
  \_   ___ \ _______  ___.__.______  _/  |_   ____  _______ |__|  ____   __ __   ______
  /    \  \/ \_  __ \<   |  |\____ \ \   __\ /  _ \ \_  __ \|  | /  _ \ |  |  \ /  ___/
- \     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \ 
+ \     \____ |  | \/ \___  ||  |_> > |  |  (  <_> ) |  | \/|  |(  <_> )|  |  / \___ \
   \______  / |__|    / ____||   __/  |__|   \____/  |__|   |__| \____/ |____/ /____  >
-         \/          \/     |__|                                                   \/ 
+         \/          \/     |__|                                                   \/
  - CLI-based encryption for passwords and random data
 
 USAGE:
    cryptorious [global options] command [command options] [arguments...]
-   
-VERSION:
-   1.2.1
-   
+
 AUTHOR(S):
-   Jeff Malnick <malnick@gmail.com> 
-   
+   Jeff Malnick <malnick@gmail.com>
+
 COMMANDS:
-    rename	 Rename an entry in the vault
-    rotate	 Rotate your cryptorious SSH keys and vault automatically
-    delete	 Remove an entry from the cryptorious vault
-    decrypt	 Decrypt a value in the vault `VALUE`
-    encrypt	 Encrypt a value for the vault `VALUE`
-    generate Generate a RSA keys or a secure password.	
+    rename      Rename an entry in the vault
+    delete      Remove an entry from the cryptorious vault
+    decrypt     Decrypt a value in the vault `VALUE`
+    encrypt     Encrypt a value for the vault `VALUE`
+    generate    Generate a RSA keys or a secure password.
 
 GLOBAL OPTIONS:
-   --vault-path, --vp "/home/malnick/.cryptorious/vault.yaml"         Path to vault.yaml
-   --private-key, --priv "/home/malnick/.ssh/cryptorious_privatekey"  Path to private key
-   --public-key, --pub "/home/malnick/.ssh/cryptorious_publickey"     Path to public key
-   --debug                                                            Debug/Verbose log output
-   --help, -h                                                         Show help
-   --version, -v                                                      Print the version
-
+   --vault-path, --vp "/Users/malnick/.cryptorious/vault.yaml"  Path to vault.yaml.
+   --debug                                                      Debug/Verbose log output.
+   --help, -h                                                   show help
+   --version, -v                                                print the version
 ```
+
+### Encrypt Sub Menu
+```
+NAME:
+   encrypt - Encrypt a value for the vault `VALUE`
+
+USAGE:
+   encrypt [command options] [arguments...]
+
+OPTIONS:
+   --key-arn    KMS key ARN
+```
+
 ### Decrypt Sub Menu
 ```   
 NAME:
@@ -64,6 +58,7 @@ OPTIONS:
    --goto, -g           Open your default browser to https://<key_name> and login automatically
    --timeout, -t "10"   Timeout in seconds for the decrypt session window to expire
 ```   
+
 ### Rename Sub Menu
 ```
 NAME:
@@ -76,6 +71,7 @@ OPTIONS:
    --old, -o    Name of old entry name [key] in vault
    --new, -n    Name of new entry name [key] in vault
 ```
+
 ### Generate Sub Menu
 ```
 NAME:
@@ -85,8 +81,7 @@ USAGE:
   generate command [command options] [arguments...]
 
 COMMANDS:
-    keys	                 Generate SSH key pair for cryptorious
-    password	[--[l]ength] Generate a random password
+   password	[--[l]ength] Generate a random password
 
 OPTIONS:
    --help, -h	show help
@@ -99,36 +94,25 @@ Build it and install: `make install`
 
 Add to your `.[bash | zsh | whatever]rc`: `alias cpt=cryptorious`
 
-## Step 1: Generate keys
+## Step 1: Add KMS keys to AWS
+NOTE: will add cmd for this soon
 
-```
-cryptorious generate keys 
-```
-
-Defaults to placing keys in ```$HOME/.ssh/cryptorious_privatekey``` and ```$HOME/.ssh/cryptorious_publickey```.
-
-You can override this with ```--private-key``` and ```--public-key```:
-
-```
-cryptorious generate keys --private-key foo_priv --public-key foo_pub 
-```
-
-### Lock It Down
-If you want to win extra security stars, lock down your keys with root ownership. By default they're already read/write by the user who ran the `cryptorious` command (0600), but you can increase this security more with `chmod root:root ~/.ssh/cryptorious_privatekey`. Now you'll have to run `cryptorious` with `sudo` and enter in your root password (ugh, passwords..) every time. 
+In your own AWS account, add a KMS key and grant your IAM user access.
 
 ## Step 2: Encrypt
+NOTE: will add flag for AWS profile soon
 
+Use your AWS profile and encrypt some data:
 ```
-cryptorious encrypt github  
+AWS_PROFILE=personal cryptorious encrypt --key-arn=<my_kms_key_arn> github.com
 ```
 
 Will open a ncurses window and prompt you for username, password and a secure note. All input is optional. 
 
-
 ## Step 3: Decrypt 
 
 ```
-cryptorious decrypt thing
+AWS_PROFILE=personal cryptorious decrypt thing
 ```
 
 Will open a ncurses window with the decrypted vault entry. 
@@ -143,19 +127,6 @@ If you've saved your vault entries with the URI of the site they belong to (i.e.
 ```
 cpt d -g -c github.com
 ```
-
-## Step 4: Rotate Keys & Vault
-Compromised your keys? Not a problem. 
-
-```
-cryptorious rotate
-```
-
-1. Backs up your old keys to `keyPath.bak`
-1. Backs up your old vault to `vaultPath.bak`
-1. Generates new keys to `keyPath`
-1. Decrypts vault using `cryptorious_privatekey.bak` and encrypts vault in place with new `cryptorious_publickey`
-1. Writes the vault back to disk at `vaultPath`
 
 ## Step 5: Generate Secure Password
 The `generate` command also lets you generate random, secure passwords of `n` length:

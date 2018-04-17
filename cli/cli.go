@@ -2,7 +2,6 @@ package cli
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	log "github.com/Sirupsen/logrus"
@@ -58,14 +57,6 @@ func Start() error {
 			Action: func(c *cli.Context) {
 				setLogger(config.DebugMode)
 				handleError(action.RenameVaultEntry(c.String("old"), c.String("new"), config.VaultPath))
-			},
-		},
-		{
-			Name:  "rotate",
-			Usage: "Rotate your cryptorious vault",
-			Action: func(c *cli.Context) {
-				setLogger(config.DebugMode)
-				handleError(action.RotateVault(config))
 			},
 		},
 		{
@@ -144,15 +135,6 @@ func Start() error {
 			Aliases: []string{"g"},
 			Usage:   "Generate a RSA keys or a secure password.",
 			Subcommands: []cli.Command{
-				{
-					Name:  "keys",
-					Usage: "Generate KMS key for cryptorious",
-					Action: func(c *cli.Context) {
-						setLogger(config.DebugMode)
-						fmt.Println("Generating new KMS key pair for ", c.Args().First())
-						handleError(action.GenerateKeys(config))
-					},
-				},
 				{
 					Name:  "password",
 					Usage: "Generate a random password",
