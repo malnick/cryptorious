@@ -11,7 +11,7 @@ import (
 	vaultConfig "github.com/malnick/cryptorious/config"
 )
 
-// Start() is a wrapper for codegansta/CLI implementation
+// Start is a wrapper for codegansta/CLI implementation
 func Start() error {
 	printBanner()
 	config, cErr := vaultConfig.GetConfiguration()
@@ -33,18 +33,6 @@ func Start() error {
 			Value:       config.VaultPath,
 			Usage:       "Path to vault.yaml.",
 			Destination: &config.VaultPath,
-		},
-		cli.StringFlag{
-			Name:        "private-key, priv",
-			Value:       config.PrivateKeyPath,
-			Usage:       "Path to private key.",
-			Destination: &config.PrivateKeyPath,
-		},
-		cli.StringFlag{
-			Name:        "public-key, pub",
-			Value:       config.PublicKeyPath,
-			Usage:       "Path to public key.",
-			Destination: &config.PublicKeyPath,
 		},
 		cli.BoolFlag{
 			Name:        "debug",
@@ -74,7 +62,7 @@ func Start() error {
 		},
 		{
 			Name:  "rotate",
-			Usage: "Rotate your cryptorious SSH keys and vault automatically",
+			Usage: "Rotate your cryptorious vault",
 			Action: func(c *cli.Context) {
 				setLogger(config.DebugMode)
 				handleError(action.RotateVault(config))
@@ -133,19 +121,22 @@ func Start() error {
 			SkipFlagParsing: false,
 			HideHelp:        false,
 			HelpName:        "encrypt",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:        "key-arn",
+					Usage:       "KMS key ARN",
+					Value:       "",
+					Destination: &config.KMSKeyARN,
+				},
+			},
 			Action: func(c *cli.Context) {
 				setLogger(config.DebugMode)
 				key := c.Args().First()
 				if len(c.Args()) != 1 {
 					handleError(errors.New("Must pass value for key in arguments to `encrypt`: `cryptorious encrypt $KEY`"))
-				} else {
-					vaultSet, err := vaultSetFromCurses()
-					if err != nil {
-						log.Fatal(err)
-					}
-
-					handleError(action.Encrypt(key, vaultSet, config))
 				}
+
+				handleError(action.Encrypt(key, config))
 			},
 		},
 		{
@@ -155,10 +146,10 @@ func Start() error {
 			Subcommands: []cli.Command{
 				{
 					Name:  "keys",
-					Usage: "Generate SSH key pair for cryptorious",
+					Usage: "Generate KMS key for cryptorious",
 					Action: func(c *cli.Context) {
 						setLogger(config.DebugMode)
-						fmt.Println("Generating new RSA public/private key pair for ", c.Args().First())
+						fmt.Println("Generating new KMS key pair for ", c.Args().First())
 						handleError(action.GenerateKeys(config))
 					},
 				},

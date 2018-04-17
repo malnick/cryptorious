@@ -9,11 +9,6 @@ import (
 	"github.com/malnick/cryptorious/vault"
 )
 
-var testVaultSet = &vault.VaultSet{
-	Username: "test",
-	Password: "notsafe",
-}
-
 func TestDeleteVaultEntry(t *testing.T) {
 	tmpfile, err := ioutil.TempFile("", "testVault")
 	if err != nil {
@@ -27,7 +22,7 @@ func TestDeleteVaultEntry(t *testing.T) {
 		t.Error(err)
 	}
 
-	err = tv.Update("testKey", testVaultSet)
+	err = tv.Add("testKey", &testVaultSet)
 	if err != nil {
 		t.Error(err)
 	}

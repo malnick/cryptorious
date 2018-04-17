@@ -1,13 +1,13 @@
 package action
 
 import (
-	"errors"
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/cryptorious/vault"
 )
 
+// RenameVaultEntry updates the key for a vault set
 func RenameVaultEntry(oldkey, newkey, vaultPath string) error {
 	v, err := vault.New(vaultPath)
 	if err != nil {
@@ -19,7 +19,7 @@ func RenameVaultEntry(oldkey, newkey, vaultPath string) error {
 	}
 
 	if _, ok := v.Data[oldkey]; !ok {
-		return errors.New(fmt.Sprintf("%s is not a valid key in the vault", oldkey))
+		return fmt.Errorf("%s is not a valid key in the vault", oldkey)
 	}
 
 	v.Data[newkey] = v.Data[oldkey]

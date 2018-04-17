@@ -5,20 +5,24 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/malnick/cryptorious/aws"
+	"github.com/malnick/cryptorious/aws/kms"
 )
 
 var (
-	VERSION  string
+	// VERSION is the git tag
+	VERSION string
+	// REVISION is the short sha of the commit
 	REVISION string
 )
 
-// Config{} is the complete application configuration
+// Config is the complete application configuration
 type Config struct {
 	DebugMode             bool
 	Version               string
 	Revision              string
-	PrivateKeyPath        string
-	PublicKeyPath         string
+	KMSKeyARN             string
+	KMSClient             kms.Impl
 	VaultDir              string
 	VaultPath             string
 	Clipboard             bool
@@ -27,16 +31,18 @@ type Config struct {
 	PrintAll              bool
 }
 
-// set() configurations application level direcotories such as the .cryptorious $HOME dir, and .ssh if it does not exist.
+// setDefaults configurations application level direcotories such as the .cryptorious $HOME dir, and .ssh if it does not exist.
 func (c *Config) setDefaults() error {
 	home := os.Getenv("HOME")
 	c.DebugMode = false
 	c.Version = VERSION
 	c.Revision = REVISION
-	c.PrivateKeyPath = fmt.Sprintf("%s/.ssh/cryptorious_privatekey", home)
-	c.PublicKeyPath = fmt.Sprintf("%s/.ssh/cryptorious_publickey", home)
 	c.VaultDir = fmt.Sprintf("%s/.cryptorious", home)
 	c.VaultPath = fmt.Sprintf("%s/vault.yaml", c.VaultDir)
+
+	a, _ := aws.New()
+	c.KMSClient = kms.New(a)
+
 	if err := statDirectoryOrCreate(c.VaultDir); err != nil {
 		return err
 	}
@@ -53,7 +59,7 @@ func statDirectoryOrCreate(dir string) error {
 	return nil
 }
 
-// Configuration() returns the configuration for application level logic
+// GetConfiguration returns the configuration for application level logic
 func GetConfiguration() (c Config, err error) {
 	if err := c.setDefaults(); err != nil {
 		return c, err

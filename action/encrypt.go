@@ -1,95 +1,79 @@
 package action
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
-	"errors"
 	"fmt"
-	"io/ioutil"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/malnick/cryptorious/config"
 	"github.com/malnick/cryptorious/vault"
+	gc "github.com/rthornton128/goncurses"
 )
 
-func Encrypt(key string, vs *vault.VaultSet, c config.Config) error {
-	pubkey, err := createPublicKey(c.PublicKeyPath)
-	if err != nil {
-		return err
-	}
-
+// Encrypt accepts a key and cryptorious config and returns an error
+// if found during the encryption process
+func Encrypt(key string, c config.Config) error {
 	thisVault, err := vault.New(c.VaultPath)
 	if err != nil {
 		return err
 	}
 
-	if len(vs.Password) > 0 {
-		if encoded, err := encryptValue(pubkey, vs.Password); err == nil {
-			vs.Password = string(encoded)
-		} else {
-			return err
-		}
-	}
-
-	if len(vs.SecureNote) > 0 {
-		if encoded, err := encryptValue(pubkey, vs.SecureNote); err == nil {
-			vs.SecureNote = string(encoded)
-		} else {
-			return err
-		}
-	}
-
-	if len(vs.Username) > 0 {
-		vs.Username = vs.Username
-	}
-
-	if err := thisVault.Update(key, vs); err != nil {
+	clr, err := cleartextFromCurses()
+	if err != nil {
 		return err
 	}
 
-	return nil
+	vs, err := clr.Encrypt(c.KMSClient, c.KMSKeyARN)
+	if err != nil {
+		return err
+	}
+
+	return thisVault.Add(key, vs)
 }
 
-func encryptValue(pubkey interface{}, value string) ([]byte, error) {
-	// Encode the passed in value
-	log.Debugf("Encoding value: %s", value)
-	encodedValue, err := rsa.EncryptPKCS1v15(rand.Reader, pubkey.(*rsa.PublicKey), []byte(value))
-	return encodedValue, err
+func cleartextFromCurses() (*vault.CleartextEntry, error) {
+	clr := &vault.CleartextEntry{}
+
+	username, err := getValuesFor("Username")
+	if err != nil {
+		return clr, err
+	}
+	clr.Username = username
+
+	password, err := getValuesFor("Password")
+	if err != nil {
+		return clr, err
+	}
+	clr.Password = password
+
+	note, err := getValuesFor("Secure Note")
+	if err != nil {
+		return clr, err
+	}
+	clr.SecureNote = note
+
+	return clr, nil
 }
 
-func createPublicKey(path string) (*rsa.PublicKey, error) {
-	pubData, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	log.Debug("using public key file: ", path)
-	log.Debug(string(pubData))
+func getValuesFor(key string) (string, error) {
+	stdscr, _ := gc.Init()
+	defer gc.End()
 
-	pubkey, err := createPublicKeyBlockCipher(pubData)
+	prompt := fmt.Sprintf("Enter %s: ", key)
+	row, col := stdscr.MaxYX()
+	row, col = (row/2)-1, (col-len(prompt))/2
+	stdscr.MovePrint(row, col, prompt)
+
+	/* GetString will only retieve the specified number of characters. Any
+	attempts by the user to enter more characters will elicit an audiable
+		beep */
+	var value string
+	value, err := stdscr.GetString(10000)
 	if err != nil {
-		return nil, err
+		return value, err
 	}
 
-	return pubkey.(*rsa.PublicKey), nil
-}
+	//	stdscr.Refresh()
+	stdscr.GetChar()
+	stdscr.Erase()
 
-func createPublicKeyBlockCipher(pubData []byte) (interface{}, error) {
-	// Create block cipher from RSA key
-	block, _ := pem.Decode(pubData)
-	// Ensure key is PEM encoded
-	if block == nil {
-		return nil, errors.New(fmt.Sprintf("Bad key data: %s, not PEM encoded", string(pubData)))
-	}
-	// Ensure this is actually a RSA pub key
-	if got, want := block.Type, "RSA PUBLIC KEY"; got != want {
-		return nil, errors.New(fmt.Sprintf("Unknown key type %q, want %q", got, want))
-	}
-	// Lastly, create the public key using the new block
-	pubkey, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		return nil, err
-	}
-	return pubkey, nil
+	return value, nil
 }
