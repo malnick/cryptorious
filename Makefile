@@ -1,22 +1,32 @@
-VERSION := $(shell git describe --tags)
-REVISION := $(shell git rev-parse --short HEAD)
+.PHONY: all build test clean
+THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
-BINARY_NAME := cryptorious
+os?="darwin"
 
-LDFLAGS := -X github.com/malnick/cryptorious/config.VERSION=$(VERSION) -X github.com/malnick/cryptorious/config.REVISION=$(REVISION) 
+all: clean test build-all
 
-FILES := $(shell go list ./... | grep -v vendor)
+build-all:
+	@$(MAKE) -f $(THIS_FILE) build os=linux
+	@$(MAKE) -f $(THIS_FILE) build os=darwin
+	@$(MAKE) -f $(THIS_FILE) build os=freebsd
+	@$(MAKE) -f $(THIS_FILE) build os=windows
 
-all: test install
+build:
+	$(call i,building cryptorious for $(os))
+	@bash -c "scripts/build.sh $(os)"
 
 test:
-	@echo "+$@"
-	go test $(FILES)  -cover
+	bash -c "./scripts/test.sh libraries unit"
 
-build: 
-	@echo "+$@"
-	go build -v -o cryptorious_$(VERSION) -ldflags '$(LDFLAGS)' cryptorious.go
+docker-test:
+	bash -c "./scripts/docker-test.sh"
 
-install:
-	@echo "+$@"
-	go install -v -ldflags '$(LDFLAGS)' $(FILES)
+clean:
+	rm -rf ./release
+
+# Helper Functions
+define i 
+	@tput setaf 6 && echo "[INFO] ==> $(1)"
+	@tput sgr0
+endef
+

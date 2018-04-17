@@ -1,13 +1,7 @@
 package action
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
-	"errors"
 	"fmt"
-	"io/ioutil"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/atotto/clipboard"
@@ -16,34 +10,23 @@ import (
 	"github.com/skratchdot/open-golang/open"
 )
 
+// Decrypt accepts a key and cryptorioius config and returns an error if found
+// during the decryption process
 func Decrypt(key string, c config.Config) error {
-	priv, err := createPrivateKey(c.PrivateKeyPath)
-	if err != nil {
-		return err
-	}
-
 	log.Debug("Retreiving encrypted values from vault...")
-	username, encryptedPassword, encryptedNote, err := lookUpVault(key, c)
+	vs, err := lookUpVaultSet(key, c)
 	if err != nil {
 		return err
 	}
 
-	log.Debug("Decrypting password...")
-	decryptedPassword, err := decryptValue(priv, encryptedPassword)
-	if err != nil {
-		log.Error(err.Error())
-		return err
-	}
-
-	log.Debug("Decrypting notes...")
-	decryptedNote, err := decryptValue(priv, encryptedNote)
+	clr, err := vs.Decrypt(c.KMSClient)
 	if err != nil {
 		return err
 	}
 
 	if c.Clipboard {
 		log.Info("Copying decrypted password to clipboard!")
-		if err := clipboard.WriteAll(string(decryptedPassword)); err != nil {
+		if err := clipboard.WriteAll(clr.Password); err != nil {
 			return err
 		}
 	}
@@ -55,52 +38,17 @@ func Decrypt(key string, c config.Config) error {
 		}
 	}
 
-	printDecrypted(key, username, string(decryptedPassword), string(decryptedNote), c.DecryptSessionTimeout)
+	printDecrypted(key, clr.Username, clr.Password, clr.SecureNote, c.DecryptSessionTimeout)
 
 	return nil
 }
 
-func createPrivateKey(path string) (*rsa.PrivateKey, error) {
-	privData, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Errorf("%s was not found. Try `generate` first.", path)
-		return nil, err
-	}
-	log.Debug("Private key file: ", path)
-
-	// Extract the PEM-encoded data block
-	block, _ := pem.Decode(privData)
-	if block == nil {
-		log.Error("bad key data: %s", "not PEM-encoded")
-		return nil, err
-	}
-	if got, want := block.Type, "RSA PRIVATE KEY"; got != want {
-		log.Error("unknown key type %q, want %q", got, want)
-		return nil, err
-	}
-	// Decode the RSA private key
-	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		log.Error("bad private key: %s", err)
-		return nil, err
-	}
-	return priv, nil
-}
-
-func decryptValue(privkey *rsa.PrivateKey, encryptedValue string) ([]byte, error) {
-	if encryptedValue == "" {
-		log.Warn("Encrypted value empty, skipping.")
-		return []byte(""), nil
-	}
-	return rsa.DecryptPKCS1v15(rand.Reader, privkey, []byte(encryptedValue))
-}
-
-func lookUpVault(key string, c config.Config) (string, string, string, error) {
+func lookUpVaultSet(key string, c config.Config) (*vault.Set, error) {
 	var vault = vault.Vault{}
 	vault.Path = c.VaultPath
 	vault.Load()
 	if _, ok := vault.Data[key]; !ok {
-		return "", "", "", errors.New(fmt.Sprintf("%s not found in %s", key, vault.Path))
+		return nil, fmt.Errorf("%s not found in %s", key, vault.Path)
 	}
-	return vault.Data[key].Username, vault.Data[key].Password, vault.Data[key].SecureNote, nil
+	return vault.Data[key], nil
 }

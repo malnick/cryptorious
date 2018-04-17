@@ -10,53 +10,44 @@ import (
 	gc "github.com/rthornton128/goncurses"
 )
 
+// PrintAll will print the entire vault contents using ncurses menu
 func PrintAll(c config.Config) error {
 	log.Info("Opening session for all entries in vault")
-	v, err := getDecryptedVault(c)
+	cleartextValues, err := decryptVault(c)
 	if err != nil {
 		return err
 	}
 
 	menuItems := []string{}
-	for entryName, _ := range v.Data {
-		menuItems = append(menuItems, entryName)
+	for key := range cleartextValues {
+		menuItems = append(menuItems, key)
 	}
 
-	printWithMenu(menuItems, v, c.DecryptSessionTimeout)
+	printWithMenu(menuItems, cleartextValues, c.DecryptSessionTimeout)
 	return nil
 }
 
-func getDecryptedVault(c config.Config) (vault.Vault, error) {
+func decryptVault(c config.Config) (map[string]vault.CleartextEntry, error) {
+	cleartextEntries := map[string]vault.CleartextEntry{}
+
 	v, err := vault.New(c.VaultPath)
 	if err != nil {
-		return v, err
+		return cleartextEntries, err
 	}
 
-	key, err := createPrivateKey(c.PrivateKeyPath)
-	if err != nil {
-		return v, err
-	}
-	if err := v.Load(); err != nil {
-		return v, err
-	}
-	for name, _ := range v.Data {
-		decryptedPassword, err := decryptValue(key, v.Data[name].Password)
+	for k, e := range v.Data {
+		clr, err := e.Decrypt(c.KMSClient)
 		if err != nil {
-			return v, err
+			return cleartextEntries, err
 		}
-		v.Data[name].Password = string(decryptedPassword)
 
-		decryptedNote, err := decryptValue(key, v.Data[name].SecureNote)
-		if err != nil {
-			return v, err
-		}
-		v.Data[name].SecureNote = string(decryptedNote)
+		cleartextEntries[k] = clr
 	}
 
-	return v, nil
+	return cleartextEntries, nil
 }
 
-func printWithMenu(menuItems []string, v vault.Vault, timeout int) error {
+func printWithMenu(menuItems []string, cleartextEntries map[string]vault.CleartextEntry, timeout int) error {
 	defer gc.End()
 	stdscr := getDefaultScreen()
 
@@ -125,9 +116,9 @@ func printWithMenu(menuItems []string, v vault.Vault, timeout int) error {
 			stdscr.ClearToEOL()
 
 			entry := menu.Current(nil).Name()
-			password := v.Data[entry].Password
-			username := v.Data[entry].Username
-			note := v.Data[entry].SecureNote
+			password := cleartextEntries[entry].Password
+			username := cleartextEntries[entry].Username
+			note := cleartextEntries[entry].SecureNote
 			printDecrypted(entry, username, password, note, timeout)
 			return nil
 		default:
@@ -172,7 +163,7 @@ func printDecrypted(key, username, password, note string, sessionTimeout int) {
 	stdscr.HLine((row/2)+1, (col/2)-len(keyMsg), gc.ACS_HLINE, col/2)
 
 	sep := make([]string, len(keyMsg))
-	for i, _ := range sep {
+	for i := range sep {
 		sep[i] = "-"
 	}
 
@@ -207,7 +198,7 @@ func printDecrypted(key, username, password, note string, sessionTimeout int) {
 
 			default:
 				stdscr.MovePrint(1, 1, fmt.Sprintf("Shutting down in %d seconds...", sessionTimeout))
-				sessionTimeout -= 1
+				sessionTimeout--
 				time.Sleep(1 * time.Second)
 				stdscr.Refresh()
 			}
