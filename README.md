@@ -1,7 +1,3 @@
-# [![CircleCI](https://circleci.com/gh/malnick/cryptorious.svg?style=svg)](https://circleci.com/gh/malnick/cryptorious)
-
-Like 1Password but for the CLI.
-
 ## Manpage
 ### Main Menu
 ```
