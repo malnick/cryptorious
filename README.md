@@ -20,7 +20,6 @@ COMMANDS:
     delete      Remove an entry from the cryptorious vault
     decrypt     Decrypt a value in the vault `VALUE`
     encrypt     Encrypt a value for the vault `VALUE`
-    generate    Generate a RSA keys or a secure password.
 
 GLOBAL OPTIONS:
    --vault-path, --vp "/Users/malnick/.cryptorious/vault.yaml"  Path to vault.yaml.
